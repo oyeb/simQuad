@@ -8,9 +8,9 @@ import matplotlib.animation as animation
 
 fig = plt.figure()
 ax = fig.add_subplot(111, projection='3d')
-ax.set_zlim(-5,5)
-ax.set_xlim(-1,1)
-ax.set_ylim(-1,1)
+ax.set_zlim(-2,2)
+#ax.set_xlim(-1,1)
+#ax.set_ylim(-1,1)
 
 quad = quadcopter.copter(ax)
 

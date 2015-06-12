@@ -26,10 +26,8 @@ def Gen_RandLine(length, dims=2) :
     return lineData
 
 def update_lines(num, dataLines, lines) :
-    print num,
     for line, data in zip(lines, dataLines) :
         # NOTE: there is no .set_data() for 3 dim data...
-        print data[0:2, :num]
         line.set_data(data[0:2, :num])
         line.set_3d_properties(data[2,:num])
     return lines
@@ -59,6 +57,6 @@ ax.set_title('3D Test')
 
 # Creating the Animation object
 line_ani = animation.FuncAnimation(fig, update_lines, 25, fargs=(data, lines),
-                              interval=50, blit=False)
+                              interval=50, blit=True)
 
 plt.show()

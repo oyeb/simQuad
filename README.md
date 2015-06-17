@@ -16,8 +16,6 @@ This is just a set of differential equations that approximately model the physic
 
 @devs install necessary packages via Synaptic package manager on Ubuntu and create another `.md` (markdown) file with tutorials, links, reference/manual pages for these packages.
 
-{@Ananth,Aditya: Split this job among yourselves, you two gotta read about all these anyways}.
-
 # Current status
 * FuncAnimation works fine, it is fast enough for our simulations.
 * Simulation dynamics complete.

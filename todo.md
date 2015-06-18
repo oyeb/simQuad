@@ -19,6 +19,7 @@ If tracking is enbled or limits for the axes are set at any point, pan and zoom 
     - Make vector visualisation.
 * Test the MPU6050
 * Test MPU6050+HMC5883L (using MPU special mode)
+    - I2CDevLib does not 
 
 #GUI or UI
 * Embed app into tkinter/wx.

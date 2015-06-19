@@ -18,6 +18,8 @@ If tracking is enbled or limits for the axes are set at any point, pan and zoom 
 * ✔ Tested the HMC5883L digital magnetometer.
     - Make vector visualisation.
 * Test the MPU6050
+    - optimize with I2CDevLib. Remove MPU6050.h
+    - Serial write bytes not ASCII.
 * Test MPU6050+HMC5883L (using MPU special mode)
     - I2CDevLib does not 
 

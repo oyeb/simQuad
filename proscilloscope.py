@@ -21,7 +21,7 @@ def calcPose(omega):
 	rpy[0] = rotate(rpy[0], rpy[2], theta[2])
 
 plt.ion()
-arduino = serial.Serial('/dev/ttyACM0', 57600)
+arduino = serial.Serial('/dev/ttyACM1', 57600)
 #dt = 5.235987755982989e-05 #.003 ms * (pi/180)
 dt = .00006
 rpy = np.eye(3)
@@ -49,8 +49,10 @@ scopes = [axes.plot(t, gyro_x, label=r'$\omega_x$')[0], axes.plot(t, gyro_y, lab
 axes.legend(prop=dict(size=14))
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
            ncol=3, mode="expand", borderaxespad=0.)
-axes.set_ylim(-260,260)
+axes.set_ylim(-250, 250)
 
+conversion = 131 #Gyro 250
+#conversion = 16384 #Accel 2g
 while True:
 	try:
 		datas = arduino.readline().strip()
@@ -59,7 +61,7 @@ while True:
 		raise RuntimeError
 	datas = datas.split(' ')
 	if len(datas) == 3:
-		datas = np.array([float(datas[0])/131, float(datas[1])/131, float(datas[2])/131])
+		datas = np.array([float(datas[0])/conversion, float(datas[1])/conversion, float(datas[2])/conversion])
 		gyro_x.append(datas[0])
 		gyro_y.append(datas[1])
 		gyro_z.append(datas[2])
@@ -75,11 +77,14 @@ while True:
 		scopes[0].set_data(t, gyro_x)
 		scopes[1].set_data(t, gyro_y)
 		scopes[2].set_data(t, gyro_z)
+		#print (datas[0]**2+datas[1]**2+datas[2]**2)**.5
+
 		pose = np.array([np.array([np.zeros(3), rpy[0]]).T,	np.array([np.zeros(3), rpy[1]]).T, np.array([np.zeros(3), rpy[2]]).T])
 		r.set_data(pose[0][:2])
 		r.set_3d_properties(pose[0][2])
 		p.set_data(pose[1][:2])
 		p.set_3d_properties(pose[1][2])
+
 		if buff>50:
 			buff=0
 			plt.draw()

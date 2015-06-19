@@ -13,8 +13,9 @@
 MPU6050 accelgyro;
 int16_t gx, gy, gz;
 int16_t ax, ay, az;
-int8_t xoff, yoff, zoff;
+int16_t xoff, yoff, zoff;
 float gxm, gym, gzm;
+float axm, aym, azm;
 int count;
 unsigned int last, el;
 volatile bool mint=false;
@@ -22,13 +23,15 @@ uint8_t int_status, temp;
 uint16_t fifocount;
 uint8_t fifoBuffer[12];
 
-//#define VERBOSE
-//#define CAL_DEBUG
-#define OUTPUT_READABLE_ACCELGYRO
+#define VERBOSE
+#define CAL_DEBUG
+#define OUTPUT_READABLE_ACCEL
+//#define OUTPUT_READABLE_GYRO
 //#define OUTPUT_BINARY_ACCELGYRO
 
 // function declarations here:
-void calibrate();
+void calibrate_accel();
+void calibrate_gyros();
 void timeit();
 
 void setup() {
@@ -38,7 +41,7 @@ void setup() {
   /*accelgyro.initialize(); //.initialize does these 2 things
   */I2Cdev::writeByte(0x68, 0x6B, 0x01); //PWR_MGMT1 for clock source as X-gyro
     //accelgyro.setClockSource(0x01);
-    uint8_t temp[8] = {0};
+    uint8_t temp[8] = {0, 0};//8
     I2Cdev::writeBytes(0x68, 0x1B, 2, temp); //GYRO_CFG and ACCEL_CFG
     //accelgyro.setFullScaleGyroRange(0x00);
     //accelgyro.setFullScaleAccelRange(0x00);
@@ -75,7 +78,8 @@ void setup() {
       Serial.print("Calibrating Gyros! Hold Still");
     #endif
   #endif
-  calibrate();
+  //calibrate_gyros();
+  calibrate_accel();
   accelgyro.resetFIFO();
 }
 
@@ -85,7 +89,7 @@ void loop(){
     last = micros();
     int_status = accelgyro.getIntStatus();
     fifocount = accelgyro.getFIFOCount();
-    if ((int_status & 1) && fifocount >= 12){
+    if ((int_status & 1) && fifocount >= 12){ //data ready! read fifo
         I2Cdev::readBytes(0x68, 0x74, 12, fifoBuffer);
         ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
         ay = (fifoBuffer[2]<<8)|fifoBuffer[3];
@@ -94,17 +98,26 @@ void loop(){
         gy = (fifoBuffer[8]<<8)|fifoBuffer[9];
         gz = (fifoBuffer[10]<<8)|fifoBuffer[11];
     }
-    if (int_status & 0x10)
+    if (int_status & 0x10) //fifo overflow
       accelgyro.resetFIFO();
-    #ifdef VERBOSE
+    #ifdef VERBOSE_1
       Serial.print(el);Serial.print(' ');
       Serial.print(int_status);Serial.print(' ');
       Serial.println(fifocount);
     #endif
-    #ifdef OUTPUT_READABLE_ACCELGYRO
+    #ifdef OUTPUT_READABLE_ACCEL
         Serial.print(ax);Serial.print(' ');
         Serial.print(ay);Serial.print(' ');
-        Serial.print(az);Serial.print(' ');
+        Serial.print(az);
+    #endif
+    #ifdef OUTPUT_READABLE_ACCEL
+      #ifdef OUTPUT_READABLE_GYRO
+        Serial.print(' ');
+      #else
+        Serial.print('\n');
+      #endif
+    #endif
+    #ifdef OUTPUT_READABLE_GYRO
         Serial.print(gx);Serial.print(' ');
         Serial.print(gy);Serial.print(' ');
         Serial.println(gz);
@@ -119,7 +132,57 @@ void loop(){
 
 #define SAMPLE_COUNT 100
 #define ITERATIONS 6
-void calibrate(){
+
+void calibrate_accel(){
+  //-74 -107 22
+  xoff = accelgyro.getXAccelOffset();
+  yoff = accelgyro.getYAccelOffset();
+  zoff = accelgyro.getZAccelOffset();
+  byte i=0;
+  while (i < ITERATIONS){ //hope that offsets converge in 6 iterations
+    accelgyro.getAcceleration(&ax, &ay, &az);
+    if (count == SAMPLE_COUNT){
+      
+      xoff += int(axm/-6);
+      yoff += int(aym/-6);
+      zoff += int((azm+16384)/-6);
+      
+      accelgyro.setXAccelOffset(xoff);
+      accelgyro.setYAccelOffset(yoff);
+      accelgyro.setZAccelOffset(zoff);
+      
+      #ifdef CAL_DEBUG
+      Serial.print(axm); Serial.print(" ");
+      Serial.print(aym); Serial.print(" ");
+      Serial.println(azm);
+      Serial.print(xoff); Serial.print(" ");
+      Serial.print(yoff); Serial.print(" ");
+      Serial.println(zoff);
+      Serial.println("*********************");
+      #endif
+      count = 0;
+      i++;
+      #ifdef VERBOSE
+        #ifndef CAL_DEBUG
+          Serial.print(".");
+        #endif
+      #endif
+    }
+    else{
+      axm = (axm*count + ax)/(count+1.0);
+      aym = (aym*count + ay)/(count+1.0);
+      azm = (azm*count + az)/(count+1.0);
+      count++;
+    }
+  }
+  #ifdef VERBOSE
+    #ifndef CAL_DEBUG
+      Serial.println("\nDone.");
+    #endif
+  #endif
+}
+
+void calibrate_gyros(){
   byte i=0;
   while (i < ITERATIONS){ //hope that offsets converge in 6 iterations
     accelgyro.getRotation(&gx, &gy, &gz);

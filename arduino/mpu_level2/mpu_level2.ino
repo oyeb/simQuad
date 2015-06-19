@@ -40,6 +40,7 @@ for (uint8_t k = 0; k < length; k += min(length, BUFFER_LENGTH)) { //BUFFER_LENG
 // AD0 high = 0x69
 MPU6050 accelgyro;
 int16_t gx, gy, gz;
+int16_t ax, ay, az;
 int8_t xoff, yoff, zoff;
 float gxm, gym, gzm;
 int count;
@@ -71,10 +72,10 @@ void setup() {
   //accelgyro.setIntEnabled(0x12);
   accelgyro.setRate(4);
   accelgyro.setDLPFMode(0x03);
-  accelgyro.setFIFOEnabled(false);
-  I2Cdev::writeByte(0x68, 0x23, 0x78);
+  accelgyro.setFIFOEnabled(true);
+  I2Cdev::writeByte(0x68, 0x23, 0x78); //FIFO_EN for ACCEL,GYRO
   accelgyro.setDMPEnabled(false);
-  I2Cdev::writeByte(0x68, 0x38, 0x11);
+  I2Cdev::writeByte(0x68, 0x38, 0x11); //INT_EN
   
   
   //verify connection
@@ -112,17 +113,28 @@ void loop(){
     int_status = accelgyro.getIntStatus();
     fifocount = accelgyro.getFIFOCount();
     if ((int_status & 1) && fifocount >= 12){
-      for (uint8_t i=0; i<12; i++)
-        I2Cdev::readByte(0x68, 0x74, fifoBuffer+i);
+        I2Cdev::readBytes(0x68, 0x74, 12, fifoBuffer);
+        ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
+        ay = (fifoBuffer[2]<<8)|fifoBuffer[3];
+        az = (fifoBuffer[4]<<8)|fifoBuffer[5];
+        gx = (fifoBuffer[6]<<8)|fifoBuffer[7];
+        gy = (fifoBuffer[8]<<8)|fifoBuffer[9];
+        gz = (fifoBuffer[10]<<8)|fifoBuffer[11];
     }
-    Serial.print(el);Serial.print(' ');
-    Serial.print(int_status);Serial.print(' ');
-    Serial.println(fifocount);
+    if (int_status & 0x10)
+      accelgyro.resetFIFO();
+    #ifdef VERBOSE
+      Serial.print(el);Serial.print(' ');
+      Serial.print(int_status);Serial.print(' ');
+      Serial.println(fifocount);
+    #endif
     #ifdef OUTPUT_READABLE_ACCELGYRO
-      for (uint8_t i=0; i<12; i++){
-        Serial.print(fifoBuffer[i]);Serial.print(' ');
-      }
-      Serial.print('\n');
+        Serial.print(ax);Serial.print(' ');
+        Serial.print(ay);Serial.print(' ');
+        Serial.print(az);Serial.print(' ');
+        Serial.print(gx);Serial.print(' ');
+        Serial.print(gy);Serial.print(' ');
+        Serial.println(gz);
     #endif
     mint = false;
   }

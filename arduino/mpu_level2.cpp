@@ -6,40 +6,13 @@
 #include "MPU6050.h"
 #include "Wire.h"
 
-/*
-Wire.beginTransmission(devAddr);
-Wire.write((uint8_t) regAddr); // send address
-for (uint8_t i = 0; i < length; i++) {
-  Wire.write((uint8_t) data[i]);
-}
-status = Wire.endTransmission();
-*/
-
-/*
-int8_t count = 0;
-uint32_t t1 = millis();
-for (uint8_t k = 0; k < length; k += min(length, BUFFER_LENGTH)) { //BUFFER_LENGTH is 32 in I2CDevLib.h
-    Wire.beginTransmission(devAddr);
-    Wire.write(regAddr);
-    Wire.endTransmission();
-    Wire.beginTransmission(devAddr);
-    Wire.requestFrom(devAddr, (uint8_t)min(length - k, BUFFER_LENGTH));
-
-    for (; Wire.available() && (timeout == 0 || millis() - t1 < timeout); count++) {
-        data[count] = Wire.read();
-    }
-  }
-  if (timeout > 0 && millis() - t1 >= timeout && count < length) count = -1; 
-  return count;
-}
-*/
-
 // class default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
 // AD0 low = 0x68 (default for InvenSense evaluation board)
 // AD0 high = 0x69
 MPU6050 accelgyro;
 int16_t gx, gy, gz;
+int16_t ax, ay, az;
 int8_t xoff, yoff, zoff;
 float gxm, gym, gzm;
 int count;
@@ -61,20 +34,21 @@ void timeit();
 void setup() {
   Wire.begin();
   Serial.begin(57600);
-  /*
-  Set clock_src = x_gyro
-  Set gyro range 250
-  Set accel rang 2g
-  Disable sleep mode
-  */
-  accelgyro.initialize();
-  //accelgyro.setIntEnabled(0x12);
+
+  /*accelgyro.initialize(); //.initialize does these 2 things
+  */I2Cdev::writeByte(0x68, 0x6B, 0x01); //PWR_MGMT1 for clock source as X-gyro
+    //accelgyro.setClockSource(0x01);
+    uint8_t temp[8] = {0};
+    I2Cdev::writeBytes(0x68, 0x1B, 2, temp); //GYRO_CFG and ACCEL_CFG
+    //accelgyro.setFullScaleGyroRange(0x00);
+    //accelgyro.setFullScaleAccelRange(0x00);
+
   accelgyro.setRate(4);
   accelgyro.setDLPFMode(0x03);
-  accelgyro.setFIFOEnabled(false);
-  I2Cdev::writeByte(0x68, 0x23, 0x78);
+  accelgyro.setFIFOEnabled(true);
+  I2Cdev::writeByte(0x68, 0x23, 0x78); //FIFO_EN for ACCEL,GYRO
   accelgyro.setDMPEnabled(false);
-  I2Cdev::writeByte(0x68, 0x38, 0x11);
+  I2Cdev::writeByte(0x68, 0x38, 0x11); //INT_EN
   
   
   //verify connection
@@ -112,17 +86,28 @@ void loop(){
     int_status = accelgyro.getIntStatus();
     fifocount = accelgyro.getFIFOCount();
     if ((int_status & 1) && fifocount >= 12){
-      for (uint8_t i=0; i<12; i++)
-        I2Cdev::readByte(0x68, 0x74, fifoBuffer+i);
+        I2Cdev::readBytes(0x68, 0x74, 12, fifoBuffer);
+        ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
+        ay = (fifoBuffer[2]<<8)|fifoBuffer[3];
+        az = (fifoBuffer[4]<<8)|fifoBuffer[5];
+        gx = (fifoBuffer[6]<<8)|fifoBuffer[7];
+        gy = (fifoBuffer[8]<<8)|fifoBuffer[9];
+        gz = (fifoBuffer[10]<<8)|fifoBuffer[11];
     }
-    Serial.print(el);Serial.print(' ');
-    Serial.print(int_status);Serial.print(' ');
-    Serial.println(fifocount);
+    if (int_status & 0x10)
+      accelgyro.resetFIFO();
+    #ifdef VERBOSE
+      Serial.print(el);Serial.print(' ');
+      Serial.print(int_status);Serial.print(' ');
+      Serial.println(fifocount);
+    #endif
     #ifdef OUTPUT_READABLE_ACCELGYRO
-      for (uint8_t i=0; i<12; i++){
-        Serial.print(fifoBuffer[i]);Serial.print(' ');
-      }
-      Serial.print('\n');
+        Serial.print(ax);Serial.print(' ');
+        Serial.print(ay);Serial.print(' ');
+        Serial.print(az);Serial.print(' ');
+        Serial.print(gx);Serial.print(' ');
+        Serial.print(gy);Serial.print(' ');
+        Serial.println(gz);
     #endif
     mint = false;
   }

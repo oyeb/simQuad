@@ -24,12 +24,13 @@
 MPU6050 accelgyro;
 int16_t gx, gy, gz;
 int16_t ax, ay, az;
+int16_t bx, by, bz;
 int16_t xoff, yoff, zoff;
 float gxm, gym, gzm;
 float axm, aym, azm;
 int count;
 unsigned int last, el, el2;
-volatile bool mint=false;
+volatile bool mint=false, cint=false;
 uint8_t int_status, temp;
 uint16_t fifocount=24, test; //fifocount is initialised with 24. Contact Ananya to understand why. Keep it like this only. There is not enough space here to explain this.
 uint8_t fifoBuffer[12];
@@ -38,11 +39,13 @@ uint8_t fifoBuffer[12];
 //#define CAL_DEBUG
 //#define OUTPUT_READABLE_ACCEL
 #define OUTPUT_READABLE_GYRO
+#define OUTPUT_READABLE_COMPASS
 
 // function declarations here:
 void calibrate_accel();
 void calibrate_gyros();
 void mpu_interrupt();
+void compass_interrupt();
 
 void setup() {
   Wire.begin();
@@ -59,9 +62,16 @@ void setup() {
   I2Cdev::writeByte(0x68, 0x38, 0x11); //INT_EN
   
   attachInterrupt(0, mpu_interrupt, RISING);
+  attachInterrupt(1, compass_interrupt, FALLING);  
 
-  pinMode(13, OUTPUT);
-  digitalWrite(13, LOW);
+  //Put the HMC5883 IC into the correct operating mode
+  Wire.beginTransmission(0x1E); //open communication with HMC5883
+  Wire.write(0x00); //select Config_Register_A: 
+  Wire.write(0x58); //4-point avg. and 75Hz rate
+  Wire.write(0x02); //In Config_Register_B: +-1.9G (820LSB/G)
+  Wire.write(0x00); //In Mode_Register: continuous measurement mode
+  Wire.endTransmission();
+  pinMode(13, INPUT);
   #ifdef CAL_DEBUG
     Serial.print("Calibrating Gyros and Accel! Hold Still and Level!");
   #endif
@@ -76,7 +86,7 @@ void loop(){
     last = micros();
     int_status = accelgyro.getIntStatus();
     fifocount = accelgyro.getFIFOCount();
-    if ((int_status & 1) && fifocount >= 12){ //data ready! read fifo
+    if ((int_status & 1) && fifocount >= 12){ //data ready! read fifo now.
         //costly operation below!! It takes 1580us!
         I2Cdev::readBytes(0x68, 0x74, 12, fifoBuffer);
         ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
@@ -85,7 +95,9 @@ void loop(){
         gx = (fifoBuffer[6]<<8)|fifoBuffer[7];
         gy = (fifoBuffer[8]<<8)|fifoBuffer[9];
         gz = (fifoBuffer[10]<<8)|fifoBuffer[11];
-        el2 = micros() - last;
+        #ifdef TIMING
+          el2 = micros() - last;
+        #endif
     }
     if (int_status & 0x10){ //fifo overflow
       accelgyro.resetFIFO();
@@ -113,6 +125,35 @@ void loop(){
     #endif
     mint = false;
     test=0;
+  }
+  if (cint){
+    el = micros() - last;
+    last = micros();
+    Wire.beginTransmission(0x1E);
+    Wire.write(0x03); //select register 3, X MSB register
+    Wire.endTransmission();
+    Wire.requestFrom(0x1E, 6);
+    if(6<=Wire.available()){
+      bx = Wire.read()<<8; //X msb
+      bx |= Wire.read(); //X lsb
+      bz = Wire.read()<<8; //Z msb
+      bz |= Wire.read(); //Z lsb
+      by = Wire.read()<<8; //Y msb
+      by |= Wire.read(); //Y lsb
+    }
+    #ifdef TIMING
+      el2 = micros() - last;
+      Serial.print(el);Serial.print(' ');
+      Serial.print(test);Serial.print(' ');
+      Serial.print(el2);Serial.print(' ');
+    #endif
+    #ifdef OUTPUT_READABLE_COMPASS
+      Serial.print(bx);Serial.print(" ");
+      Serial.print(by);Serial.print(" ");
+      Serial.print(bz);Serial.println("b");
+    #endif
+    cint = false;
+    test = 0;
   }
   else{
     //other non-motion work!
@@ -207,4 +248,9 @@ void calibrate_gyros(){
 void mpu_interrupt(){
   //This interrupt (from MPU) fires every ~4990-5000us
   mint = true;
+}
+
+void compass_interrupt(){
+  //This interrupt (from HMC5883L) fires every 13333us
+  cint = true;
 }

@@ -1,12 +1,23 @@
-//-=-=-=-=-=-=-=-=-=-=-=-=  IMPORTANT  -=-=-=-=-=-=-=-=-=-=-=-=
-// Connect only 3.3V to MPU Vcc pin NOT 5V
-// Connect AD0 pin to ground
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+/*-=-=-=-=-=-=-=-=-=-=-=-=  IMPORTANT  -=-=-=-=-=-=-=-=-=-=-=-=
++ Connect only 3.3V to MPU Vcc pin NOT 5V
++ Connect AD0 pin to ground
++ All  I2C reads/writes (for 1byte) take ~960us.
++ Additional reads/writes (in blocks) take 100us (per byte) more!!
+*  I2C operations are extremely costly. Minimise them in the loop() or else...
+     -  1  byte   480us
+     -  2  bytes  580us
+     - 12 bytes  1580us
+
+*_* This can be reduced by a factor of ~4 if twi.h CONSTANTS are changed so that the
+*_* I2C bus communicates @ 400kHz rather than standard 100kHz
+*_* OR we use FastWire library for I2C rather than the default Wire library. I2Cdev works
+*_* with both!!
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 #include "I2Cdev.h"
 #include "MPU6050.h"
 #include "Wire.h"
 
-// class default I2C address is 0x68
+// Device default I2C address is 0x68
 // specific I2C addresses may be passed as a parameter here
 // AD0 low = 0x68 (default for InvenSense evaluation board)
 // AD0 high = 0x69
@@ -17,34 +28,28 @@ int16_t xoff, yoff, zoff;
 float gxm, gym, gzm;
 float axm, aym, azm;
 int count;
-unsigned int last, el;
+unsigned int last, el, el2;
 volatile bool mint=false;
 uint8_t int_status, temp;
-uint16_t fifocount;
+uint16_t fifocount=24, test; //fifocount is initialised with 24. Contact Ananya to understand why. Keep it like this only. There is not enough space here to explain this.
 uint8_t fifoBuffer[12];
 
-#define VERBOSE
-#define CAL_DEBUG
-#define OUTPUT_READABLE_ACCEL
-//#define OUTPUT_READABLE_GYRO
-//#define OUTPUT_BINARY_ACCELGYRO
+//#define TIMING
+//#define CAL_DEBUG
+//#define OUTPUT_READABLE_ACCEL
+#define OUTPUT_READABLE_GYRO
 
 // function declarations here:
 void calibrate_accel();
 void calibrate_gyros();
-void timeit();
+void mpu_interrupt();
 
 void setup() {
   Wire.begin();
   Serial.begin(57600);
-
-  /*accelgyro.initialize(); //.initialize does these 2 things
-  */I2Cdev::writeByte(0x68, 0x6B, 0x01); //PWR_MGMT1 for clock source as X-gyro
-    //accelgyro.setClockSource(0x01);
-    uint8_t temp[8] = {0, 0};//8
-    I2Cdev::writeBytes(0x68, 0x1B, 2, temp); //GYRO_CFG and ACCEL_CFG
-    //accelgyro.setFullScaleGyroRange(0x00);
-    //accelgyro.setFullScaleAccelRange(0x00);
+  I2Cdev::writeByte(0x68, 0x6B, 0x01); //PWR_MGMT1 for clock source as X-gyro
+  uint8_t temp[8] = {8, 0};//GYRO range:250, ACCEL range:2g | Refer the Datasheet if you want to change these.
+  I2Cdev::writeBytes(0x68, 0x1B, 2, temp); //GYRO_CFG and ACCEL_CFG
 
   accelgyro.setRate(4);
   accelgyro.setDLPFMode(0x03);
@@ -53,32 +58,14 @@ void setup() {
   accelgyro.setDMPEnabled(false);
   I2Cdev::writeByte(0x68, 0x38, 0x11); //INT_EN
   
-  
-  //verify connection
-  //Serial.println("Testing device connections...");
-  //Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
-  //Configure interrupt pin:
-  //  Clear on any read
-  //  active-high
-  //  DMP_INT, probably when FIFO is ready. The DATA_RDY fires when all sensor regs are updated.
-  //    So, which interrupt fires after FIFO update???
-  /*
-  Wire.beginTransmission(0x68);
-  Wire.write(0x37); //INT_CFG
-  Wire.write(0x70); //0111 0000
-  Wire.write(0x01); //0000 0010 (DMP_INT)
-  Wire.endTransmission();
-  */
-  attachInterrupt(0, timeit, RISING);
+  attachInterrupt(0, mpu_interrupt, RISING);
 
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
-  #ifdef VERBOSE
-    #ifndef CAL_DEBUG
-      Serial.print("Calibrating Gyros! Hold Still");
-    #endif
+  #ifdef CAL_DEBUG
+    Serial.print("Calibrating Gyros and Accel! Hold Still and Level!");
   #endif
-  //calibrate_gyros();
+  calibrate_gyros();
   calibrate_accel();
   accelgyro.resetFIFO();
 }
@@ -90,6 +77,7 @@ void loop(){
     int_status = accelgyro.getIntStatus();
     fifocount = accelgyro.getFIFOCount();
     if ((int_status & 1) && fifocount >= 12){ //data ready! read fifo
+        //costly operation below!! It takes 1580us!
         I2Cdev::readBytes(0x68, 0x74, 12, fifoBuffer);
         ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
         ay = (fifoBuffer[2]<<8)|fifoBuffer[3];
@@ -97,20 +85,21 @@ void loop(){
         gx = (fifoBuffer[6]<<8)|fifoBuffer[7];
         gy = (fifoBuffer[8]<<8)|fifoBuffer[9];
         gz = (fifoBuffer[10]<<8)|fifoBuffer[11];
+        el2 = micros() - last;
     }
-    if (int_status & 0x10) //fifo overflow
+    if (int_status & 0x10){ //fifo overflow
       accelgyro.resetFIFO();
-    #ifdef VERBOSE_1
+    }
+    #ifdef TIMING
       Serial.print(el);Serial.print(' ');
       Serial.print(int_status);Serial.print(' ');
-      Serial.println(fifocount);
+      Serial.print(test);Serial.print(' ');
+      Serial.print(el2);Serial.print(' ');
     #endif
     #ifdef OUTPUT_READABLE_ACCEL
-        Serial.print(ax);Serial.print(' ');
-        Serial.print(ay);Serial.print(' ');
-        Serial.print(az);
-    #endif
-    #ifdef OUTPUT_READABLE_ACCEL
+      Serial.print(ax);Serial.print(' ');
+      Serial.print(ay);Serial.print(' ');
+      Serial.print(az);
       #ifdef OUTPUT_READABLE_GYRO
         Serial.print(' ');
       #else
@@ -118,15 +107,18 @@ void loop(){
       #endif
     #endif
     #ifdef OUTPUT_READABLE_GYRO
-        Serial.print(gx);Serial.print(' ');
-        Serial.print(gy);Serial.print(' ');
-        Serial.println(gz);
+      Serial.print(gx);Serial.print(' ');
+      Serial.print(gy);Serial.print(' ');
+      Serial.println(gz);
     #endif
     mint = false;
+    test=0;
   }
   else{
     //other non-motion work!
-    ;
+    #ifdef TIMING
+      test++;
+    #endif
   }
 }
 
@@ -134,7 +126,6 @@ void loop(){
 #define ITERATIONS 6
 
 void calibrate_accel(){
-  //-74 -107 22
   xoff = accelgyro.getXAccelOffset();
   yoff = accelgyro.getYAccelOffset();
   zoff = accelgyro.getZAccelOffset();
@@ -142,30 +133,25 @@ void calibrate_accel(){
   while (i < ITERATIONS){ //hope that offsets converge in 6 iterations
     accelgyro.getAcceleration(&ax, &ay, &az);
     if (count == SAMPLE_COUNT){
-      
       xoff += int(axm/-6);
       yoff += int(aym/-6);
       zoff += int((azm+16384)/-6);
-      
       accelgyro.setXAccelOffset(xoff);
       accelgyro.setYAccelOffset(yoff);
       accelgyro.setZAccelOffset(zoff);
-      
       #ifdef CAL_DEBUG
-      Serial.print(axm); Serial.print(" ");
-      Serial.print(aym); Serial.print(" ");
-      Serial.println(azm);
-      Serial.print(xoff); Serial.print(" ");
-      Serial.print(yoff); Serial.print(" ");
-      Serial.println(zoff);
-      Serial.println("*********************");
+        Serial.print(axm); Serial.print(" ");
+        Serial.print(aym); Serial.print(" ");
+        Serial.println(azm);
+        Serial.print(xoff); Serial.print(" ");
+        Serial.print(yoff); Serial.print(" ");
+        Serial.println(zoff);
+        Serial.println("*********************");
       #endif
       count = 0;
-      i++;
-      #ifdef VERBOSE
-        #ifndef CAL_DEBUG
-          Serial.print(".");
-        #endif
+      i++; //iteration++
+      #ifdef CAL_DEBUG
+        Serial.print(".");
       #endif
     }
     else{
@@ -175,10 +161,8 @@ void calibrate_accel(){
       count++;
     }
   }
-  #ifdef VERBOSE
-    #ifndef CAL_DEBUG
-      Serial.println("\nDone.");
-    #endif
+  #ifdef CAL_DEBUG
+    Serial.println(" Done.");
   #endif
 }
 
@@ -187,27 +171,25 @@ void calibrate_gyros(){
   while (i < ITERATIONS){ //hope that offsets converge in 6 iterations
     accelgyro.getRotation(&gx, &gy, &gz);
     if (count == SAMPLE_COUNT){
-      xoff += int(gxm/-6);
-      yoff += int(gym/-6);
-      zoff += int(gzm/-6);
+      xoff += int(gxm/-3);
+      yoff += int(gym/-3);
+      zoff += int(gzm/-3);
       accelgyro.setXGyroOffset(xoff);
       accelgyro.setYGyroOffset(yoff);
       accelgyro.setZGyroOffset(zoff);
       #ifdef CAL_DEBUG
-      Serial.print(gxm); Serial.print(" ");
-      Serial.print(gym); Serial.print(" ");
-      Serial.println(gzm);
-      Serial.print(xoff); Serial.print(" ");
-      Serial.print(yoff); Serial.print(" ");
-      Serial.println(zoff);
-      Serial.println("*********************");
+        Serial.print(gxm); Serial.print(" ");
+        Serial.print(gym); Serial.print(" ");
+        Serial.println(gzm);
+        Serial.print(xoff); Serial.print(" ");
+        Serial.print(yoff); Serial.print(" ");
+        Serial.println(zoff);
+        Serial.println("*********************");
       #endif
       count = 0;
-      i++;
-      #ifdef VERBOSE
-        #ifndef CAL_DEBUG
-          Serial.print(".");
-        #endif
+      i++; //iteration++
+      #ifdef CAL_DEBUG
+        Serial.print(".");
       #endif
     }
     else{
@@ -217,13 +199,12 @@ void calibrate_gyros(){
       count++;
     }
   }
-  #ifdef VERBOSE
-    #ifndef CAL_DEBUG
-      Serial.println("\nDone.");
-    #endif
+  #ifdef CAL_DEBUG
+    Serial.println(" Done.");
   #endif
 }
 
-void timeit(){
-    mint = true;
+void mpu_interrupt(){
+  //This interrupt (from MPU) fires every ~4990-5000us
+  mint = true;
 }

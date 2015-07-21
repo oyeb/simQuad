@@ -1,8 +1,15 @@
+/*
+Changelog
+
+20 Jul 2015 Added Binary Output Mode, tested with proscilloscope.py and gyro_scope.py
+_________________________________________________________________________________________
+*/
 /*-=-=-=-=-=-=-=-=-=-=-=-=  IMPORTANT  -=-=-=-=-=-=-=-=-=-=-=-=
 + Connect only 3.3V to MPU Vcc pin NOT 5V
 + Connect AD0 pin to ground
 + All  I2C reads/writes (for 1byte) take ~960us.
 + Additional reads/writes (in blocks) take 100us (per byte) more!!
++ READABLE and BINARY should not be defined together!!
 *  I2C operations are extremely costly. Minimise them in the loop() or else...
      -  1  byte   480us
      -  2  bytes  580us
@@ -12,6 +19,7 @@
 *_* I2C bus communicates @ 400kHz rather than standard 100kHz
 *_* OR we use FastWire library for I2C rather than the default Wire library. I2Cdev works
 *_* with both!!
+
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=*/
 #include "I2Cdev.h"
 #include "MPU6050.h"
@@ -30,14 +38,24 @@ float axm, aym, azm;
 int count;
 unsigned int last, el, el2;
 volatile bool mint=false;
-uint8_t int_status, temp;
+uint8_t int_status, temp, script_ready=0;
 uint16_t fifocount=24, test; //fifocount is initialised with 24. Contact Ananya to understand why. Keep it like this only. There is not enough space here to explain this.
-uint8_t fifoBuffer[12];
 
-//#define TIMING
+
 //#define CAL_DEBUG
-//#define OUTPUT_READABLE_ACCEL
-#define OUTPUT_READABLE_GYRO
+#define BINARY_OUT
+//#define READABLE
+//#define OUTPUT_ACCEL
+#define OUTPUT_GYRO
+
+#ifdef READABLE
+  //#define TIMING //TIMING is allowed only in READABLE mode
+  uint8_t fifoBuffer[12];
+#endif
+#ifdef BINARY_OUT
+  //#define TIMING //TIMING is allowed only in READABLE mode
+  uint8_t fifoBuffer[14];
+#endif
 
 // function declarations here:
 void calibrate_accel();
@@ -48,7 +66,7 @@ void setup() {
   Wire.begin();
   Serial.begin(57600);
   I2Cdev::writeByte(0x68, 0x6B, 0x01); //PWR_MGMT1 for clock source as X-gyro
-  uint8_t temp[8] = {8, 0};//GYRO range:250, ACCEL range:2g | Refer the Datasheet if you want to change these.
+  uint8_t temp[8] = {8, 0};//GYRO range:500, ACCEL range:2g | Refer the Datasheet if you want to change these.
   I2Cdev::writeBytes(0x68, 0x1B, 2, temp); //GYRO_CFG and ACCEL_CFG
 
   accelgyro.setRate(4);
@@ -76,8 +94,9 @@ void loop(){
     last = micros();
     int_status = accelgyro.getIntStatus();
     fifocount = accelgyro.getFIFOCount();
-    if ((int_status & 1) && fifocount >= 12){ //data ready! read fifo
+    if (int_status & 1){ //data ready! read fifo
         //costly operation below!! It takes 1580us!
+      #ifdef READABLE
         I2Cdev::readBytes(0x68, 0x74, 12, fifoBuffer);
         ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
         ay = (fifoBuffer[2]<<8)|fifoBuffer[3];
@@ -86,30 +105,58 @@ void loop(){
         gy = (fifoBuffer[8]<<8)|fifoBuffer[9];
         gz = (fifoBuffer[10]<<8)|fifoBuffer[11];
         el2 = micros() - last;
+      #endif
+      #ifdef BINARY_OUT
+        I2Cdev::readBytes(0x68, 0x3B, 14, fifoBuffer); //from 3b to 48
+        //ax ay az temp gx gy gz {all 2 byte}
+      #endif
     }
     if (int_status & 0x10){ //fifo overflow
       accelgyro.resetFIFO();
     }
-    #ifdef TIMING
-      Serial.print(el);Serial.print(' ');
-      Serial.print(int_status);Serial.print(' ');
-      Serial.print(test);Serial.print(' ');
-      Serial.print(el2);Serial.print(' ');
-    #endif
-    #ifdef OUTPUT_READABLE_ACCEL
-      Serial.print(ax);Serial.print(' ');
-      Serial.print(ay);Serial.print(' ');
-      Serial.print(az);
-      #ifdef OUTPUT_READABLE_GYRO
-        Serial.print(' ');
-      #else
-        Serial.print('\n');
+    #ifdef READABLE
+      #ifdef TIMING
+        Serial.print(el);Serial.print(' ');
+        Serial.print(int_status);Serial.print(' ');
+        Serial.print(test);Serial.print(' ');
+        Serial.print(el2);Serial.print(' ');
+      #endif
+      #ifdef OUTPUT_ACCEL
+        Serial.print(ax);Serial.print(' ');
+        Serial.print(ay);Serial.print(' ');
+        Serial.print(az);
+        #ifdef OUTPUT_GYRO
+          Serial.print(' ');
+        #else
+          Serial.print('\n');
+        #endif
+      #endif
+      #ifdef OUTPUT_GYRO
+        Serial.print(gx);Serial.print(' ');
+        Serial.print(gy);Serial.print(' ');
+        Serial.println(gz);
       #endif
     #endif
-    #ifdef OUTPUT_READABLE_GYRO
-      Serial.print(gx);Serial.print(' ');
-      Serial.print(gy);Serial.print(' ');
-      Serial.println(gz);
+    #ifdef BINARY_OUT
+        if (script_ready){
+          /*
+          ax = (fifoBuffer[0]<<8)|fifoBuffer[1];
+          ay = (fifoBuffer[2]<<8)|fifoBuffer[3];
+          az = (fifoBuffer[4]<<8)|fifoBuffer[5];
+          gx = (fifoBuffer[8]<<8)|fifoBuffer[9];
+          gy = (fifoBuffer[10]<<8)|fifoBuffer[11];
+          gz = (fifoBuffer[12]<<8)|fifoBuffer[13];
+          Serial.print(gx);Serial.print(' ');
+          Serial.print(gy);Serial.print(' ');
+          Serial.println(gz);
+          */
+          Serial.write(fifoBuffer, 6);
+          Serial.write(fifoBuffer+8, 6);
+        }
+        else if(Serial.available() > 0){
+          Serial.read();
+          script_ready=1;
+        }
     #endif
     mint = false;
     test=0;

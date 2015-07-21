@@ -13,8 +13,8 @@ Arduino is providing space separated gyro readings @ ~5ms intervals (via MPU Int
 + You need to use correct value of "dt".
 + You need to set the correct conversion factor for Gyro readings.
   Mode  0		1		2		3
-  Range +-250	+-500	+-1000	+-2000
-  Conv. 131		65.5	32.75	16.375
+  Range +-250		+-500		+-1000		+-2000
+  Conv. 131		65.5		32.75		16.375
 
 AND it DELIVERS:
 * 3 axis loss-less Gyro readings plot (almost real time).
@@ -53,7 +53,7 @@ def calcPose(omega):
 
 plt.ion()
 # SET CORRECT PORT NUM HERE
-arduino = serial.Serial('/dev/ttyACM0', 57600)
+arduino = serial.Serial('/dev/ttyACM2', 57600)
 # dt is found experimentally. Contact Ananya for details. Basically this the time between
 # 2 MPU(gyro) interrupts. The np.pi/180 converts deg/sec to rad/sec.
 # SET CORRECT dt HERE
@@ -131,7 +131,7 @@ while True:
 		p.set_data(pose[1][:2])
 		p.set_3d_properties(pose[1][2])
 
-		if buff>50:
+		if buff>15:
 			buff=0
 			plt.draw()
 		buff += 1

@@ -21,9 +21,9 @@ def calcPose(omega):
 	rpy[0] = rotate(rpy[0], rpy[2], theta[2])
 
 plt.ion()
-arduino = serial.Serial('/dev/ttyACM1', 57600)
-#dt = 5.235987755982989e-05 #.003 ms * (pi/180)
-dt = .00006
+arduino = serial.Serial('/dev/ttyACM0', 57600)
+dt = .005 * (np.pi/180)
+
 rpy = np.eye(3)
 
 fig = plt.figure(figsize=(16,6))
@@ -49,9 +49,9 @@ scopes = [axes.plot(t, gyro_x, label=r'$\omega_x$')[0], axes.plot(t, gyro_y, lab
 axes.legend(prop=dict(size=14))
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
            ncol=3, mode="expand", borderaxespad=0.)
-axes.set_ylim(-250, 250)
+axes.set_ylim(-250,250)
 
-conversion = 131 #Gyro 250
+conversion = 65.5 #Gyro 250
 #conversion = 16384 #Accel 2g
 while True:
 	try:
@@ -85,7 +85,7 @@ while True:
 		p.set_data(pose[1][:2])
 		p.set_3d_properties(pose[1][2])
 
-		if buff>50:
+		if buff>15:
 			buff=0
 			plt.draw()
 		buff += 1

@@ -54,7 +54,7 @@ def calcPose(omega):
 
 plt.ion()
 # SET CORRECT PORT NUM HERE
-arduino = serial.Serial('/dev/ttyACM0', 57600)
+arduino = serial.Serial('/dev/ttyACM4', 57600)
 # dt is found experimentally. Contact Ananya for details. Basically this the time between
 # 2 MPU(gyro) interrupts. The np.pi/180 converts deg/sec to rad/sec.
 # SET CORRECT dt HERE. TIME IN SECONDS BETWEEN TWO SENSOR PACKETS AS RECVD. BY ARDUINO.
@@ -146,7 +146,11 @@ while True:
 	p.set_data(pose[1][:2])
 	p.set_3d_properties(pose[1][2])
 
+<<<<<<< HEAD
 	if buff>50:
+=======
+	if buff>15:
+>>>>>>> 6650e80dd0f8a8f779a2bb2ab7d20fd2aa3ecc83
 		buff=0
 		plt.draw()
 	buff += 1

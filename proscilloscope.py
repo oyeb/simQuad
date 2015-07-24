@@ -21,7 +21,11 @@ def calcPose(omega):
 	rpy[0] = rotate(rpy[0], rpy[2], theta[2])
 
 plt.ion()
+<<<<<<< HEAD
 arduino = serial.Serial('/dev/ttyACM0', 57600)
+=======
+arduino = serial.Serial('/dev/ttyACM4', 57600)
+>>>>>>> 6650e80dd0f8a8f779a2bb2ab7d20fd2aa3ecc83
 dt = 8.726646259971648e-05 #.005 ms * (pi/180)
 #dt = .00006
 rpy = np.eye(3)
@@ -100,7 +104,11 @@ while True:
 	p.set_data(pose[1][:2])
 	p.set_3d_properties(pose[1][2])
 
+<<<<<<< HEAD
 	if buff>50:
+=======
+	if buff>15:
+>>>>>>> 6650e80dd0f8a8f779a2bb2ab7d20fd2aa3ecc83
 		buff=0
 		plt.draw()
 	buff += 1

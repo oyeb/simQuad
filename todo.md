@@ -5,11 +5,11 @@
     - All axes do not have same sensitivity. Requires careful calibration.
     - For now, it is in the cold box.
 * Test the MPU6050
-    - optimize with I2CDevLib. Remove MPU6050.h
-    - Serial write bytes not ASCII.
+    - optimize with I2CDevLib. Remove MPU6050.h [All currently used initialisation calls to be converted to I2CDevLib.]
+    - ✔ Serial write bytes not ASCII.
     - Drop the MPU Interrupt as 5ms is a very fast update interval.
-        + Setup arduino timer for interrupting (adaptively? {normal|debug}).
-        + Poll sensor registers directly.
+        + ✔ Setup arduino timer for interrupting (adaptively? {normal|debug}).
+        + ✔ Poll sensor registers directly.
         + Disable FIFO on MPU
 * Test MPU6050+HMC5883L (using MPU special mode, don't forget to calibrate)
     - I2CDevLib does not 

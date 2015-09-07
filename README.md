@@ -9,6 +9,9 @@ to perform the 3D plotting, specifically uses the Artist.FuncAnimation() to crea
 This is just a set of differential equations that approximately model the physics of the quadcopter. We just increment the timestep and generate the position and orientation vectors for the quadcopter. Thanks to Andrew Gibiansky's amazing [blogpost](http://andrew.gibiansky.com/blog/physics/quadcopter-dynamics/). {Need Documentation to describe this!}.
 
 # Dependencies
+* Quadcopter Flight Control {Install these libraries just as described [here](https://www.arduino.cc/en/Guide/Libraries#toc5)}
+    - [mytimer](https://github.com/arrow-/simQuad/tree/master/arduino)}
+        + This library provides an interrupt service to poll the MPU6050 via TIMER1.
 * [wxPython](http://wxpython.org/)
 * [matplotlib](http://matplotlib.org/)
 * [NumPy](http://www.numpy.org/)

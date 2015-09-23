@@ -1,5 +1,6 @@
 # simQuad
 simQuad is a lightweight Quadcopter simulation and control algorithm testing program built in python for quick evaluation of control strategies for an (ill-modeled) quadcopter. This program by no means *compensates* for ill-models, it's sole task is to perform reasonable non-linear simulation of Quadcopter dynamics with a control law specified by the programmer and produce an Isometric 3D wireframe animation.
+*[THIS README NEEDS EDITING]*
 
 # Built upon
 simQuad uses
@@ -9,7 +10,7 @@ to perform the 3D plotting, specifically uses the Artist.FuncAnimation() to crea
 This is just a set of differential equations that approximately model the physics of the quadcopter. We just increment the timestep and generate the position and orientation vectors for the quadcopter. Thanks to Andrew Gibiansky's amazing [blogpost](http://andrew.gibiansky.com/blog/physics/quadcopter-dynamics/). {Need Documentation to describe this!}.
 
 # Dependencies
-* Quadcopter Flight Control {Install these libraries just as described [here](https://www.arduino.cc/en/Guide/Libraries#toc5)}
+* Quadcopter Flight Control Libraries {Install these libraries just as described [here](https://www.arduino.cc/en/Guide/Libraries#toc5)}
     - [mytimer](https://github.com/arrow-/simQuad/tree/master/arduino)}
         + This library provides an interrupt service to poll the MPU6050 via TIMER1.
 * [wxPython](http://wxpython.org/)
@@ -37,7 +38,7 @@ See [todo.md](https://github.com/arrow-/simQuad/blob/master/todo.md)
 # Policy
 Major project decisions need to be well documented, that is, reasoned. Documentation need not be actual "e-documents", but video demos, pictures, screenshots, pictures of hand-written text, audio, etc.
 
-This is primarily to create a formal history that can be not only passed on to project interns or new (noob junior) project members.
+This is primarily to create a formal history that can be not only passed on to project interns or new (junior) project members.
 It also serves a noble secondary aim, it honestly tracks the progress of the project and forms a basis to evaluate efficiency of group members.
 Thirdly, your document is a formal contribution to the project (a single doc can have multiple authors).
 

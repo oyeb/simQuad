@@ -12,6 +12,14 @@ def rotate(v, axis, theta):
                      [axis[0]*axis[2]*t-axis[1]*s, axis[1]*axis[2]*t+axis[0]*s, c+axis[2]*axis[2]*t] ])
     return mat.dot(v.T)
 
+def calcAngle(accel):
+	angle = np.array([
+					np.arctan(accel[0]/np.sqrt(accel[1]**2+accel[2]**2))+1.5707963267948966,
+					np.arctan(accel[1]/np.sqrt(accel[0]**2+accel[2]**2))+1.5707963267948966,
+					np.arctan(accel[2]/np.sqrt(accel[1]**2+accel[0]**2))+1.5707963267948966,
+					])
+	return angle
+
 def calcPose(omega):
 	theta = omega*dt
 	rpy[1] = rotate(rpy[1], rpy[0], theta[0])
@@ -21,11 +29,7 @@ def calcPose(omega):
 	rpy[0] = rotate(rpy[0], rpy[2], theta[2])
 
 plt.ion()
-<<<<<<< HEAD
 arduino = serial.Serial('/dev/ttyACM0', 57600)
-=======
-arduino = serial.Serial('/dev/ttyACM4', 57600)
->>>>>>> 6650e80dd0f8a8f779a2bb2ab7d20fd2aa3ecc83
 dt = 8.726646259971648e-05 #.005 ms * (pi/180)
 #dt = .00006
 rpy = np.eye(3)
@@ -36,9 +40,10 @@ a3d = fig.add_subplot(122, projection='3d')
 a3d.set_xlim(-1.2,1.2)
 a3d.set_ylim(-1.2,1.2)
 a3d.set_zlim(-1.2,1.2)
-a3d.scatter([0], [0], [0], s=40)
+#a3d.scatter([0], [0], [0], s=40)
 r, = a3d.plot([0,1], [0,0], [0,0], lw=2)
 p, = a3d.plot([0,0], [0,1], [0,0], lw=2)
+gyaw, = a3d.plot([0,0], [0,0], [0,1], lw=2)
 a3d.plot([0,2], [0,0], [0,0])
 a3d.plot([0,0], [0,2], [0,0])
 a3d.plot([0,0], [0,0], [0,2])
@@ -55,8 +60,8 @@ plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
            ncol=3, mode="expand", borderaxespad=0.)
 axes.set_ylim(-510, 510)
 
-conversion = 65.5 #Gyro 500
-#conversion = 16384 #Accel 2g
+gconv = 65.5 #Gyro 500
+aconv = 16384.0 #Accel 2g
 
 print 'Me Ready'
 time.sleep(2)
@@ -80,7 +85,10 @@ while True:
 			data[_ind] = data[_ind] - 0x10000
 		_ind += 1
 	#print data[3:]
-	datas = np.array([float(data[3])/conversion, float(data[4])/conversion, float(data[5])/conversion])
+	datas = np.array([float(data[3])/gconv, float(data[4])/gconv, float(data[5])/gconv])
+	accel = np.array([float(data[0])/aconv, float(data[1])/aconv, float(data[2])/aconv])
+	accel_angles = calcAngle(accel)
+	print "%.5f %.3f %.3f %.3f" %(accel[0]**2+accel[1]**2+accel[2]**2, accel_angles[0]*180/np.pi, accel_angles[1]*180/np.pi, accel_angles[2]*180/np.pi)
 	gyro_x.append(datas[0])
 	gyro_y.append(datas[1])
 	gyro_z.append(datas[2])
@@ -103,12 +111,11 @@ while True:
 	r.set_3d_properties(pose[0][2])
 	p.set_data(pose[1][:2])
 	p.set_3d_properties(pose[1][2])
+	#gyaw
+	gyaw.set_data([0, -np.cos(accel_angles[0])], [0, -np.cos(accel_angles[1])])
+	gyaw.set_3d_properties([0, np.cos(accel_angles[2])])
 
-<<<<<<< HEAD
-	if buff>50:
-=======
-	if buff>15:
->>>>>>> 6650e80dd0f8a8f779a2bb2ab7d20fd2aa3ecc83
+	if buff>25:
 		buff=0
 		plt.draw()
 	buff += 1

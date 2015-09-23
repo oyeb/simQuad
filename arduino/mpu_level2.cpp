@@ -46,7 +46,7 @@ uint16_t fifocount=24, test; //fifocount is initialised with 24. Contact Ananya 
 #define BINARY_OUT
 //#define READABLE
 //#define OUTPUT_ACCEL
-#define OUTPUT_GYRO
+//#define OUTPUT_GYRO
 
 #ifdef READABLE
   //#define TIMING //TIMING is allowed only in READABLE mode
@@ -92,7 +92,7 @@ void loop(){
   if (mint){
     el = micros() - last;
     last = micros();
-    int_status = accelgyro.getIntStatus();
+    I2Cdev::readByte(0x68, 0x3A, &int_status);
     fifocount = accelgyro.getFIFOCount();
     if (int_status & 1){ //data ready! read fifo
         //costly operation below!! It takes 1580us!

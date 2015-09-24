@@ -62,7 +62,7 @@ THE SOFTWARE.
 // AD0 low = 0x68 (default for InvenSense evaluation board)
 // AD0 high = 0x69
 volatile bool mint=false;
-uint8_t int_status, temp, script_ready=0;
+uint8_t int_status, script_ready=0;
 int16_t acc_t_gyro[7]; //intended global variable <---> MPU
 
 // function declarations here:

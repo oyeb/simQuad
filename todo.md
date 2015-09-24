@@ -13,8 +13,7 @@
 
 ##Feature Addition
 * Use [XbeeS2](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board wireless.
-Port the Kalman filter to cpp headers [@ananth95]
-* Port the Kalman filter to cpp headers [@ananth95]
+* Port the Kalman filter to cpp headers
 * θ-based PID control
   -  How to map [ω<sub>r</sub> ω<sub>p</sub> ω<sub>y</sub>] to [ω<sub>1</sub> ω<sub>2</sub> ω<sub>3</sub> ω<sub>4</sub>]? Won't that require some *constatnts*?
 

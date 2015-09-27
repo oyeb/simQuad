@@ -14,8 +14,22 @@ void mpu_init(){
   I2Cdev::writeByte(0x68, 0x38, 0x01); //INT_EN
 }
 
+/*
+  Reads sensor registers and copies data into the global var in MAIN.
+  Sensor registers could have been read "in-a-block" to save time. In this case, 
+  ~68us (180us - (~112)us spent in copying) would have been saved at the cost of 15B of 
+  global mem. Would need 14 byte temporary array, one loop to copy, etc for that. Not worth it
+*/
 void mpu_getReadings(int16_t *main_blob){
-  I2Cdev::readWords(0x68, 0x3B, 7, (uint16_t *)main_blob);
+  I2Cdev::readWords(0x68, 0x3B, 3, (uint16_t *)main_blob);
+  I2Cdev::readWords(0x68, 0x43, 3, (uint16_t *)(main_blob+3));
+  /*
+  uint8_t i;
+  int16_t local_blob[7];
+  I2Cdev::readWords(0x68, 0x3B, 7, (uint16_t *)local_blob);
+  for (i=0; i<6; i++)
+    main_blob[i] = (i<3)? local_blob[i] : local_blob[i+1];
+  */
 }
 
 void mpu_get_int_status(uint8_t *main_i_status){

@@ -43,9 +43,9 @@ uint16_t fifocount=24, test; //fifocount is initialised with 24. Contact Ananya 
 
 
 //#define CAL_DEBUG
-#define BINARY_OUT
-//#define READABLE
-//#define OUTPUT_ACCEL
+//#define BINARY_OUT
+#define READABLE
+#define OUTPUT_ACCEL
 //#define OUTPUT_GYRO
 
 #ifdef READABLE

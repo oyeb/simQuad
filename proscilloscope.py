@@ -88,7 +88,7 @@ while True:
 	datas = np.array([float(data[3])/gconv, float(data[4])/gconv, float(data[5])/gconv])
 	accel = np.array([float(data[0])/aconv, float(data[1])/aconv, float(data[2])/aconv])
 	accel_angles = calcAngle(accel)
-	print "%.5f %.3f %.3f %.3f" %(accel[0]**2+accel[1]**2+accel[2]**2, accel_angles[0]*180/np.pi, accel_angles[1]*180/np.pi, accel_angles[2]*180/np.pi)
+	print "%.5f:%.3f %.3f %.3f" %(accel[0]**2+accel[1]**2+accel[2]**2, accel_angles[0]*180/np.pi, accel_angles[1]*180/np.pi, accel_angles[2]*180/np.pi)
 	gyro_x.append(datas[0])
 	gyro_y.append(datas[1])
 	gyro_z.append(datas[2])

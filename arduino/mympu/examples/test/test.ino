@@ -13,7 +13,7 @@
 
 volatile bool mint=false;
 uint8_t int_status, script_ready=0;
-int16_t acc_t_gyro[7]; //intended global variable <---> MPU
+int16_t acc_gyro[6]; //intended global variable <---> MPU
 
 void setup() {
   Serial.begin(57600);
@@ -29,25 +29,24 @@ void setup() {
 void loop(){
   if (mint){
     mpu_get_int_status(&int_status);
-    mpu_getReadings(acc_t_gyro);
+    mpu_getReadings(acc_gyro);
     //give readable o/p
     #ifdef CAL_DEBUG 
-      Serial.print(acc_t_gyro[0]);
+      Serial.print(acc_gyro[0]);
       Serial.print(" ");
-      Serial.print(acc_t_gyro[1]);
+      Serial.print(acc_gyro[1]);
       Serial.print(" ");
-      Serial.println(acc_t_gyro[2]);
+      Serial.println(acc_gyro[2]);
     #endif
     //give binary o/p
     #ifndef CAL_DEBUG
       if (script_ready){
         uint8_t i, hi, lo;
-        for (i=0; i<=12; i+=2){
-          hi = (acc_t_gyro[i/2] >> 8);
-          lo = (acc_t_gyro[i/2] & 0xFF);
+        for (i=0; i<=10; i+=2){
+          hi = (acc_gyro[i/2] >> 8);
+          lo = (acc_gyro[i/2] & 0xFF);
           Serial.write( &hi, 1 );
           Serial.write( &lo, 1 );
-          if (i==4) i=6;
         }
       }
       else if(Serial.available() > 0){

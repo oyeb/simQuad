@@ -1,6 +1,10 @@
 #include "mympu.h"
 
-void mpu_init(){
+/*
+  mode <=0 No interrupts from mpu
+  mode  >0 Interrupts from mpu enabled
+*/
+void mpu_init(uint8_t mode){
   Wire.begin();
   I2Cdev::writeByte(0x68, 0x6B, 0x01);    //PWR_MGMT1 for clock source as X-gyro
   uint8_t config_info[4] = {4, 3, 8, 0}; // Refer the Datasheet if you want to change these.
@@ -11,7 +15,8 @@ void mpu_init(){
   0x1C[ACCEL_CFG]: 0x00 set ACCEL_CFG_FS_SEL[4:3] = 00 range:2g
 */
   I2Cdev::writeBytes(0x68, 0x19, 4, config_info);
-  I2Cdev::writeByte(0x68, 0x38, 0x01); //INT_EN
+  if (mode > 0)
+    I2Cdev::writeByte(0x68, 0x38, 0x01); //INT_EN
 }
 
 /*

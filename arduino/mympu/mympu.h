@@ -1,5 +1,7 @@
 /*
   24 Sep Initial Commit, tested with {gyro_scope, proscilloscope, kalman_binary}.py
+  27 Sep getReadings() is sub-optimal [read comment in ~.cpp to see why.]
+         Interrupts from MPU are now optional via <mode> arg to mpu_init()
 ____________________________________________________________________________________________
 FEATURES
 + Cleaner, unified method of comms. with MPU via I2CDevLib commands.
@@ -58,7 +60,7 @@ THE SOFTWARE.
 #define OFFSETS_EEPROM 12 // accel_gyro offsets from 12 thru 26
 //#define CAL_DEBUG
 
-void mpu_init();
+void mpu_init(uint8_t);
 void cal_mpu_off(uint8_t);
 void cfgr_mpu_off();
 void mpu_getReadings(int16_t *);

@@ -15,7 +15,7 @@ You need an Arduino Board and an MPU6050. See the wiki on [how to hook up an MPU
   - Kill the process using `Ctrl` `C` to exit.
   - The `.py` script may have to launched twice incae you do not see the plot.
 
-![Snapshot of kalman_binary.py in action](img/attitude_vis3.png "Snapshot of kalman_binary.py in action")
+![Snapshot of kalman_binary.py in action](https://cloud.githubusercontent.com/assets/9897445/11621002/d0c21f32-9cdd-11e5-911d-e7066bb343ef.png "Snapshot of kalman_binary.py in action")
 
 # Built upon
 simQuad uses
@@ -26,9 +26,9 @@ This is just a set of differential equations that approximately model the physic
 
 # Dependencies
 * Quadcopter Flight Control Libraries {Install these libraries just as described [here](https://www.arduino.cc/en/Guide/Libraries#toc5)}
-    - [mytimer](https://github.com/arrow-/simQuad/tree/master/arduino)
+    - [mytimer](arduino/mytimer)
         + This library provides an interrupt service to poll the MPU6050 via TIMER1.
-    - [mympu](https://github.com/arrow-/simQuad/tree/master/arduino)
+    - [mympu](arduino/mympu)
         + This is an interface to the MPU6050 built on the [I2CDevLib](https://github.com/jrowberg/i2cdevlib)
 * [wxPython](http://wxpython.org/)
 * [matplotlib](http://matplotlib.org/)
@@ -44,7 +44,7 @@ This is just a set of differential equations that approximately model the physic
 * Working on wireless comms using XBEE.
 
 # Future work
-See [todo.md](https://github.com/arrow-/simQuad/blob/master/todo.md)
+See [todo.md](todo.md)
 * Develop (θ+ω) PID control.
 * Develop multiple LTI(Linear Time Invariant) controllers for various behaviours(hover, hold-altitude, hold-pitch/roll, yaw, launch, land, ...).
 * Compare PID with LTI.

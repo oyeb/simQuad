@@ -1,8 +1,35 @@
-#code to plot filtered angle and rpy of the quad  --- ino file mpu level2
+'''
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+This file visualises the attitude of the MPU6050 chip.
+
+COMPATIBLE WITH:
++ ~/arduino/saber.cpp
++ ~/arduino/mpu_reflowed.cpp {CAL_DEBUG shoud NOT be defined}
+
+YOU MUST ENSURE:
+* In .cpp files, timer_init() must be called with same TIME_INTERVAL as specified below!
+* Each serial packets are 6 bytes of binary data
+* You need to specify correct Serial port
+* You need to set the Y-limits of the plot axis.
+* You need to set the correct conversion factor for Gyro readings.
+  Mode  0		   1		  2		    3
+  Range +-250	 +-500	+-1000	+-2000
+  Conv. 131		 65.5	  32.75	  16.375
+
+AND it DELIVERS:
+* 3 axis loss-less Gyro readings plot (almost real time).
+* 3D visualisation of current orientation based on gyro vals
+   .
+  / \  You might have to launch this script repeatedly if no data is transmitted by the arduino
+ / ! \ If problem persists, flash the .cpp once more and the repeat.
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+'''
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 import serial, time
+TIME_INTERVAL = 0.005
+
 
 def rotate(v, axis, theta):
     c = np.cos(theta)
@@ -14,6 +41,7 @@ def rotate(v, axis, theta):
     return mat.dot(v.T)
 
 def calcPose(omega):
+	dt = TIME_INTERVAL*np.pi/180.0
 	dtheta  = omega*dt
 	rpy[1] = rotate(rpy[1], rpy[0], dtheta[0])
 	rpy[0] = rotate(rpy[0], rpy[1], dtheta[1])
@@ -51,7 +79,6 @@ def variance(readings):
 
 plt.ion()
 arduino = serial.Serial('/dev/ttyACM0', 57600)
-dt = .005*np.pi/180.0
 rpy = np.eye(3)
 
 fig = plt.figure(figsize=(16,6))
@@ -97,14 +124,14 @@ scopes = [axes.plot(t, kyaw_alpha, label=r'$\theta_x$')[0], axes.plot(t, kyaw_be
 axes.legend(prop=dict(size=14))
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
            ncol=3, mode="expand", borderaxespad=0.)
-axes.set_ylim(-95,95)
+axes.set_ylim(-55,195)
 
 g_scale = 65.5 #Gyro 500
 a_scale = 16384.0 #Accel 2g
 
-val  = np.zeros((10,3))
-vala  = np.zeros((10,3))
-valb = np.zeros((10,3))
+accel_history  = np.zeros((10,3))
+ktheta_history  = np.zeros((10,3))
+bias_history = np.zeros((10,3))
 bias = np.zeros(3)
 ktheta = np.array([1.5707963267948966,1.5707963267948966,0])
 P = np.array([np.zeros(3),np.zeros(3),np.zeros(3),np.zeros(3)])
@@ -135,23 +162,23 @@ while True:
 	gyro3 = np.array([float(data[3])/g_scale, float(data[4])/g_scale, float(data[5])/g_scale])
 
 	#variance work
-	val = np.delete(val,9,0)
-	val = np.insert(val,0,accel3,0)
-	R_measure = variance(val)
-	valb = np.delete(valb,9,0)
-	valb = np.insert(valb,0,bias,0)
-	Q_bias = variance(valb)
-	vala = np.delete(vala,9,0)
-	vala = np.insert(vala,0,ktheta,0)
-	Q_angle = variance(vala)
+	accel_history = np.delete(accel_history,9,0)
+	accel_history = np.insert(accel_history,0,accel3,0)
+	R_measure = variance(accel_history)
+	bias_history = np.delete(bias_history,9,0)
+	bias_history = np.insert(bias_history,0,bias,0)
+	Q_bias = variance(bias_history)
+	ktheta_history = np.delete(ktheta_history,9,0)
+	ktheta_history = np.insert(ktheta_history,0,ktheta,0)
+	Q_angle = variance(ktheta_history)
 	
 	#ktheta = kalman(accel3,bias,gyro3,ktheta*180/np.pi,Q_angle,Q_bias)
 	omega = gyro3 - bias #dps - dps
-	ktheta = ktheta + omega*0.005 #d - d
-	P[0] += 0.005 * (0.005*P[3] - P[1] - P[2] + Q_angle)
-	P[1] -= 0.005 * P[3]
-	P[2] -= 0.005 * P[3]
-	P[3] += Q_bias * 0.005
+	ktheta = ktheta + omega*TIME_INTERVAL #d - d
+	P[0] += TIME_INTERVAL * (TIME_INTERVAL*P[3] - P[1] - P[2] + Q_angle)
+	P[1] -= TIME_INTERVAL * P[3]
+	P[2] -= TIME_INTERVAL * P[3]
+	P[3] += Q_bias * TIME_INTERVAL
 	S = P[0] + R_measure
 	K[0] = P[0] / S
 	K[1] = P[2] / S

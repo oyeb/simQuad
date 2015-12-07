@@ -1,0 +1,45 @@
+#"data" is what we recieve from the arduino (just 6 sensor readings)
+accel3= np.array([float(data[0])/a_scale, float(data[1])/a_scale, float(data[2])/a_scale])
+gyro3 = np.array([float(data[3])/g_scale, float(data[4])/g_scale, float(data[5])/g_scale])
+
+#variance work
+val = np.delete(val,9,0)
+val = np.insert(val,0,accel3,0)
+# R_measure is variance in accel readings
+R_measure = variance(val)
+valb = np.delete(valb,9,0)
+valb = np.insert(valb,0,bias,0)
+# Q_bias is variance in the computed gyro "omega" bias
+Q_bias = variance(valb)
+vala = np.delete(vala,9,0)
+vala = np.insert(vala,0,ktheta,0)
+# Q_angle is variance in estimated direction angles 
+Q_angle = variance(vala)
+
+# ktheta = kalman(accel3,bias,gyro3,ktheta*180/np.pi,Q_angle,Q_bias) AND THATS OUR ESTIMATE (part 1)
+# ktheta is a 3 elem list : [alpha, beta, gamma], the angles gravity vector makes with the axes
+# bias is OUR ESTIMATE (part 2)
+omega = gyro3 - bias #dps - dps
+# estimate step
+ktheta = ktheta + omega*0.005 #d - d
+P[0] += 0.005 * (0.005*P[3] - P[1] - P[2] + Q_angle)
+P[1] -= 0.005 * P[3]
+P[2] -= 0.005 * P[3]
+P[3] += Q_bias * 0.005
+#innovation step
+S = P[0] + R_measure
+#below is the Kalman Gain matrix
+K[0] = P[0] / S
+K[1] = P[2] / S
+kangle = calcAngle(accel3)*180/np.pi #degree
+ky = kangle - ktheta
+#merge step
+ktheta += K[0] * ky
+bias  += K[1] * ky #dps
+#work for next iteration
+P00_temp = P[0]
+P01_temp = P[1]
+P[0] -= K[0] * P00_temp
+P[1] -= K[0] * P01_temp
+P[2] -= K[1] * P00_temp
+P[3] -= K[1] * P01_temp

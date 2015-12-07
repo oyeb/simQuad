@@ -1,5 +1,7 @@
 /*
 22 Sep 2015 Removed MPU6050.h completely, Joined calibration procs, Provide EEPROM save
+            This file replaces mpu_levelX.cpp files
+            No need of interrupt wires from MPU to arduino
 _________________________________________________________________________________________
 
   -=-=-=-=-=-=-=-=-=-=-=-=  IMPORTANT  -=-=-=-=-=-=-=-=-=-=-=-=

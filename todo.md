@@ -12,15 +12,15 @@
         + ✔ Setup arduino timer for interrupting (adaptively? {normal|debug}).
 
 ##Feature Addition
-* Use [XbeeS2](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board wireless.
+* Use [XbeeS1](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board, wireless.
 * Port the Kalman filter to cpp headers
 * θ-based PID control
   -  How to map [ω<sub>r</sub> ω<sub>p</sub> ω<sub>y</sub>] to [ω<sub>1</sub> ω<sub>2</sub> ω<sub>3</sub> ω<sub>4</sub>]? Won't that require some *constatnts*?
 
 ##Code Restructuring
-* ✔ Develop the Radio Transmitter interface.
+* Develop the Radio Transmitter interface.
 * ✔ Develop the timer interface.
-* Develop the MPU6050 interface [✔ partial]
+* ✔ Develop the MPU6050 interface
 
 ##Physics
 * ✔ Created Physics engine for a quad.
@@ -45,3 +45,4 @@ If tracking is enbled or limits for the axes are set at any point, pan and zoom 
 ##Other Resources
 [Varesano's Blog: FreeIMU lib+hardware](http://www.varesano.net/projects/hardware/FreeIMU)
 [jrowberg's I2CDevLib](https://github.com/jrowberg/i2cdevlib)
+{Papers will be added soon}

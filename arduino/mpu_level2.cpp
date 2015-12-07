@@ -2,6 +2,7 @@
 Changelog
 
 20 Jul 2015 Added Binary Output Mode, tested with proscilloscope.py and gyro_scope.py
+07 Dec 2015 This file is obsolete. Use mpu_reflowed.cpp instead
 _________________________________________________________________________________________
 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=  IMPORTANT  -=-=-=-=-=-=-=-=-=-=-=-=
@@ -46,7 +47,7 @@ uint16_t fifocount=24, test; //fifocount is initialised with 24. Contact Ananya 
 //#define BINARY_OUT
 #define READABLE
 #define OUTPUT_ACCEL
-//#define OUTPUT_GYRO
+#define OUTPUT_GYRO
 
 #ifdef READABLE
   //#define TIMING //TIMING is allowed only in READABLE mode

@@ -25,8 +25,8 @@ class radio:
     print("myid : %d"%myid)
   
   def notify(self):
-    self.interface.flushInput()
     self.write('e')
+    self.interface.flushInput()
 
   def write(self, tx_str):
     self.interface.write(tx_str)

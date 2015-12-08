@@ -8,18 +8,19 @@
     - ✔ optimize with I2CDevLib. Remove MPU6050.h [All currently used initialisation calls to be converted to I2CDevLib.]
     - ✔ Serial write bytes, no ASCII.
     - Devise a better calibration regime, ref: [the guy who makes spheres](http://www.varesano.net/blog/fabio/freeimu-gui-now-making-nice-3d-spheres)
-    - Drop the MPU Interrupt as 5ms is a very fast update interval.
+    - ✔ Drop the MPU Interrupt as 5ms is a very fast update interval.
         + ✔ Setup arduino timer for interrupting (adaptively? {normal|debug}).
 
 ##Feature Addition
-* Use [XbeeS1](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board, wireless.
-    + ✔ Initial testing.
+* ✔ Use [XbeeS1](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board, wireless.
+  + This is Master(`groud_station`) - Slave(`quadcopter`) only. Slave cannot initiate. *Hopefully, there won't be any need of Asynchronous Peer Protocol*:grin:
 * Port the Kalman filter to cpp headers
 * θ-based PID control
   -  How to map [ω<sub>r</sub> ω<sub>p</sub> ω<sub>y</sub>] to [ω<sub>1</sub> ω<sub>2</sub> ω<sub>3</sub> ω<sub>4</sub>]? Won't that require some *constatnts*?
 
 ##Code Restructuring
-* Develop the Radio Transmitter interface.
+* ✔ Develop the Radio Transmitter interface.
+  + 
 * ✔ Develop the timer interface.
 * ✔ Develop the MPU6050 interface
 

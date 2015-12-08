@@ -27,7 +27,7 @@ AND it DELIVERS:
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-import serial, time
+import serial, time, at_talk
 TIME_INTERVAL = 0.005
 
 
@@ -78,7 +78,7 @@ def variance(readings):
 
 
 plt.ion()
-arduino = serial.Serial('/dev/ttyACM0', 57600)
+arduino = at_talk.radio('/dev/ttyACM1', 57600)
 rpy = np.eye(3)
 
 fig = plt.figure(figsize=(16,6))
@@ -140,14 +140,11 @@ K = np.array([np.zeros(3),np.zeros(3)])
 print 'Me Ready'
 time.sleep(2.5)
 #Handshake MAY BE REDUNDANT
-print arduino.inWaiting()
-arduino.flushInput()
-arduino.write('e')
-print 'Sent Request...'
+arduino.notify()
 data = [0]*6
 while True:
 	try:
-		num = arduino.read(12)
+		num = arduino.readn(12)
 		num = [ord(x) for x in num]
 	except:
 		print 'Serial error!'
@@ -230,3 +227,5 @@ while True:
 
 plt.ioff()
 plt.show()
+arduino.notify()
+arduino.powerdown()

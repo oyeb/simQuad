@@ -8,6 +8,7 @@
 
 volatile uint8_t mint=0;
 uint8_t script_ready=0;
+char cmd_in;
 int16_t acc_gyro[6], count=0; //intended global variable <---> MPU
 
 void setup() {
@@ -43,19 +44,20 @@ void loop(){
         for (i=0; i<=10; i+=2){
           hi = (acc_gyro[i/2] >> 8);
           lo = (acc_gyro[i/2] & 0xFF);
-          Serial.write( &hi, 1 );
-          Serial.write( &lo, 1 );
+          Serial.write( &hi, 1);
+          Serial.write( &lo, 1);
         }
-      }
-      else if(Serial.available() > 0){
-        Serial.read();
-        script_ready=1;
       }
     #endif
     mint = false;
   }
   else{
     //other non-motion work!
+    if (Serial.available() > 0){
+      cmd_in = Serial.read();
+      Serial.write(cmd_in+1);
+      script_ready = !script_ready;
+    }
     count++;
   }
 }

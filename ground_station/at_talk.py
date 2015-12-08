@@ -6,7 +6,7 @@ xbee pinouts:
 3.DIN (Rx of Xbee) connect to TX of...
 10.GND
 '''
-import serial
+import serial, random
 
 class radio:
 
@@ -25,8 +25,13 @@ class radio:
     print("myid : %d"%myid)
   
   def notify(self):
-    self.write('e')
+    code = random.randint(0, 255)
+    self.write(chr(code))
     self.interface.flushInput()
+    echo = self.readn(1)
+    #while echo != (code+1)%256:
+    #  echo = self.readn(1)
+    print('/-.-\ hand shook. s:%s(%d) r:%s(%d)'%(chr(code), code, echo, ord(echo)))
 
   def write(self, tx_str):
     self.interface.write(tx_str)
@@ -43,4 +48,5 @@ if __name__ == '__main__':
   xbee.notify()
   while True:
     print(xbee.readn(1))
+  xbee.notify()
   xbee.powerdown()

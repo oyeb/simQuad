@@ -17,6 +17,8 @@ You need an Arduino Board and an MPU6050. See the wiki on [how to hook up an MPU
 
 ![Snapshot of kalman_binary.py in action](https://cloud.githubusercontent.com/assets/9897445/11621002/d0c21f32-9cdd-11e5-911d-e7066bb343ef.png "Snapshot of kalman_binary.py in action")
 
+If you need wireless communications, hook the `RX` and `TX` of the XBee radio into the Arduino's Serial `TX` `Rx` pins. Make sure the XBees are in `AT-transparent` (not in `ZB`) mode *(Just flash or make sure the firmware on both radios is 802.15.4)*. This time, instead of `kalman_binary.py` launch `kalman_wbinary.py`.
+
 # Built upon
 simQuad uses
 * **[matplotlib](http://www.matplotlib.org)**

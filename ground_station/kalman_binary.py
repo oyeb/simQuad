@@ -78,7 +78,7 @@ def variance(readings):
 
 
 plt.ion()
-arduino = at_talk.radio('/dev/ttyACM1', 57600)
+arduino = at_talk.radio('/dev/ttyACM0', 57600)
 rpy = np.eye(3)
 
 fig = plt.figure(figsize=(16,6))

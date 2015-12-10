@@ -19,9 +19,10 @@ class Sorter:
       if self.comms.mode == 'att_est':
         try:
           num = self.arduino.readn(12)
-          num = [ord(x) for x in num]
+          if self.config.this_is_v2:
+            num = [ord(x) for x in num]
         except:
-          print 'Serial error!'
+          print('Serial error!')
           raise RuntimeError
         self.q_attest.put(num)
         self.comms.packet = num

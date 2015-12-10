@@ -42,7 +42,7 @@ class state_estimator:
       gyro3  = np.array([float(self.data[3])/self.config.g_scale, float(self.data[4])/self.config.g_scale, float(self.data[5])/self.config.g_scale])
       # converted packet -> data -> gyro3, accel3
       #fout.write("%s %s\n"%(accel3, gyro3))
-      print accel3, gyro3
+      print (accel3, gyro3)
     
     #fout.close()
     print('Estimation has paused')

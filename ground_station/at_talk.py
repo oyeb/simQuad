@@ -26,7 +26,7 @@ class radio:
   
   def notify(self):
     code = random.randint(0, 255)
-    self.write(chr(code))
+    self.write(chr(code).encode('latin1'))
     self.interface.flushInput()
     echo = self.readn(1)
     #while echo != (code+1)%256:

@@ -115,9 +115,6 @@ kyaw_alpha = [0]
 kyaw_beta = [0]
 kyaw_gamma = [0]
 t = [0]
-acc_x=[0]
-acc_y=[0]
-acc_z=[0]
 
 
 scopes = [axes.plot(t, kyaw_alpha, label=r'$\theta_x$')[0], axes.plot(t, kyaw_beta, label=r'$\theta_y$')[0], axes.plot(t, kyaw_gamma, label=r'$\theta_z$')[0]]

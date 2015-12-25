@@ -26,7 +26,7 @@
 */
 #define OCR_VALUE(timeperiod) timeperiod*250-1
 
-void timer_init(int tp, volatile uint8_t *flag);
+void timer_init(int tp, volatile uint8_t *flag, uint8_t set_value);
 /*
   Initialises TIMER1 with:
   	64 prescaler

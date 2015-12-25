@@ -1,9 +1,12 @@
 #include <mytimer.h>
 
 volatile uint8_t *flag;
-void timer_init(int tp, volatile uint8_t *flag_var)
+uint8_t set_value;
+
+void timer_init(int tp, volatile uint8_t *flag_var, uint8_t set_value_var)
 {
     flag = flag_var;
+    set_value = set_value_var;
     // initialize Timer1
     cli();          // disable global interrupts
     TCCR1A = 0;     // set entire TCCR1A register to 0
@@ -23,5 +26,5 @@ void timer_init(int tp, volatile uint8_t *flag_var)
 
 ISR(TIMER1_COMPA_vect)
 {
-    *flag = !(*flag);;
+    *flag |= set_value;
 }

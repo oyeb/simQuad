@@ -24,6 +24,24 @@ NOTES
 *_* OR we use FastWire library for I2C rather than the default Wire library. I2Cdev works
 *_* with both!!
 
+OFFSETS (23/12/15)
+  6   -2998
+  8   -71
+  10  1748
+  19  56
+  21  -42
+  23  -11
+
+
+REGISTERS
+06.07 ACC_Xoff [HI:LOW]
+08.09 ACC_Yoff
+0A.1B ACC_Zoff
+13.14 GYRO_Xoff
+15.16 GYRO_Yoff
+17.18 GYRO_Zoff
+--------------------------------------------------------------------------------------------
+LICENSE
 I2Cdev device library code is placed under the MIT license
 Copyright (c) 2013 Jeff Rowberg
 

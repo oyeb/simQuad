@@ -6,14 +6,17 @@
 #include "Wire.h"
 #include "mytimer.h"
 
+#define CAL_DEBUG
+
 volatile uint8_t mint=0;
 uint8_t script_ready=0;
 char cmd_in;
-int16_t acc_gyro[6], count=0; //intended global variable <---> MPU
+int16_t acc_gyro[6];
+uint16_t count=0; //intended global variable <---> MPU
 
 void setup() {
   Serial.begin(57600);
-  timer_init(5, &mint);
+  timer_init(5, &mint, 1);
   mpu_init(0); //No interrupts from MPU reqd.
   cfgr_mpu_off();  //Read offsets from OFFSETS_EEPROM
   //cal_mpu_off(1); //If need to reconfig eeprom consts.

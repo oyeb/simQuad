@@ -44,7 +44,7 @@ p_sorter.start()
 
 ch = ""
 while ch != "quit":
-  if this_is_v2:
+  if ns_cfg.this_is_v2:
     ch = raw_input('> ')
   else:
     ch = input('> ')

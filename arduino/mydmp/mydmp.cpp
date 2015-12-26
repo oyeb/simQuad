@@ -9,8 +9,8 @@ void mpu_init(uint8_t mode=0){
   I2Cdev::writeByte(0x68, 0x6B, 0x01);    //PWR_MGMT1 for clock source as X-gyro, SLEEP{bit6} is (obviously) disabled
   uint8_t config_info[4] = {4, 3, 8, 0}; // Refer the Datasheet if you want to change these.
 /*
-  0x19[SMPRT_DIV]: 0x04 set SamplingRate as (clock_source / 4) = 2kHz [Accelerometer has max sample rate of 1kHz]
-  0x1A[CONFIG]   : 0x03 set DLPF_CFG[2-0] bits in as 3 rest are all zero anyways.
+  0x19[SMPRT_DIV]: 0x04 set SamplingRate as (1kHz / (1 + 0x04) = 200Hz [Accelerometer has max sample rate of 1kHz]
+  0x1A[CONFIG]   : 0x03 set DLPF_CFG[2-0] bits in as 3 rest are all zero anyways DLPF = 42Hz.
   0x1B[GYRO_CFG] : 0x08 set GYRO_CFG_FS_SEL[4:3] = 10  range:500
   0x1C[ACCEL_CFG]: 0x00 set ACCEL_CFG_FS_SEL[4:3] = 00 range:2g
 */
@@ -185,9 +185,13 @@ void mpu_getReadings(int16_t *main_blob){
 }
 
 void mpu_send_quat_packet(uint8_t *packet){
+  // [00 01][04 05][08 09][12 13]
+  // 8 bytes
   uint8_t i;
-  for (i=0; i<14; i++)
-    Serial.write(packet[i]);
+  for (i=0; i<4; i++){
+    Serial.write(packet[(i<<2)]);
+    Serial.write(packet[(i<<2)|1]);
+  }
 }
 
 void mpu_get_int_status(uint8_t *main_i_status){

@@ -1,5 +1,15 @@
 /*
   27 Sep Tested with all kalman_binary.py, works like a charm
+  25 Dec rectified timer_init()
+-------------------------------------------------------------------------------------------------------------------
+MPU_CONFIGURATION
+    * No fifo, raw accel and gyro
+    * Accel and gyro offsets are taken from eeprom/calibrated
+    * Clock Source:        X-GYRO
+    * Sample rate:         200Hz (5ms)
+    * DLPF bandwidth:      42Hz
+    * gyro sensitivity:    500 dps
+    * accel sensitivity:   2g
 */
 #include "mympu.h"
 #include "I2Cdev.h"

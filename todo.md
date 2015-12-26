@@ -1,50 +1,45 @@
 #QuadCopter Project @CSE
 
 ##Sensor testing
+
 * ✔ Tested the HMC5883L digital magnetometer.
     - All axes do not have same sensitivity. Requires careful calibration.
     - For now, it is in the cold box.
 * ✔ Test the MPU6050
     - ✔ optimize with I2CDevLib. Remove MPU6050.h [All currently used initialisation calls to be converted to I2CDevLib.]
     - ✔ Serial write bytes, no ASCII.
+    - ✔ Utilise the onboard DMP for quaternion generation.
     - Devise a better calibration regime, ref: [the guy who makes spheres](http://www.varesano.net/blog/fabio/freeimu-gui-now-making-nice-3d-spheres)
     - ✔ Drop the MPU Interrupt as 5ms is a very fast update interval.
         + ✔ Setup arduino timer for interrupting (adaptively? {normal|debug}).
 
 ##Feature Addition
+
 * ✔ Use [XbeeS1](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board, wireless.
   + This is Master(`groud_station`) - Slave(`quadcopter`) only. Slave cannot initiate. *Hopefully, there won't be any need of Asynchronous Peer Protocol*:grin:
-* Port the Kalman filter to cpp headers
-* θ-based PID control
-  -  How to map [ω<sub>r</sub> ω<sub>p</sub> ω<sub>y</sub>] to [ω<sub>1</sub> ω<sub>2</sub> ω<sub>3</sub> ω<sub>4</sub>]? Won't that require some *constatnts*?
+* Use `VisPy` for visualisations in `ground_station`.
+* ✔ Use Quaternions for attitude representation.
+* ✔ Realised that Kalman filter cannot fuse gyro and accel estimates of attitude as the signal-noise is not *"white" (ie, NOT normally distributed)*
+    + Instead make EKF that takes the control input into consideration.
 
 ##Code Restructuring
+
 * ✔ Develop the Radio Transmitter interface.
-  + 
+    + ✔ Can get quaternion if needed.
+    + ✔ Compatible with `mpl-vis` and `vispy-vis`
 * ✔ Develop the timer interface.
 * ✔ Develop the MPU6050 interface
+* ✔ Develop the DMP-MPU6050 interface
 
 ##Physics
+
 * ✔ Created Physics engine for a quad.
     - Use approximate non-linear dynamics.
 
 ##Animation
-I have decided to revisit camera tracking later and I'm going to focus on other stuff. I tried looking for a way in which axes re-plotting could be faster. Not much luck.
-* Software switch for tracking
-    - intelligent tracking using bounding box. Move axes only when it exits the current view(BBox). Otherwise center camera and hold. When to stop tracking?
-    - camera has attains same velocity as `quad.pos`. How about a PD controller for the cam?
-* Trajectory plotting in non-tracking mode
-
-####Note!
-If tracking is enbled or limits for the axes are set at any point, pan and zoom do not work well. Either,
-
-* submit a bug to MPL -> {?}
-* remove the limits temporarily while panning/zooming -> {difficult}
-* disable pan and zoom in those cases ->{easy-peasy-japaneasy}
-
-**Anyways**, software tracking can do intuitive pan/zoom if needed via the PD controller.
+I have decided to utilise [VisPy](http://vispy.org/) for all plotting work. The 3D plotting is ready but not the `mpl-plots`. I did see a way to subclass `scenegraph` [here](https://github.com/vispy/vispy/issues/1140). If this works, I'll have to decide what to do with the current 3D plotting which is primitive, though extremely robust (because I understand the transforms).
 
 ##Other Resources
 [Varesano's Blog: FreeIMU lib+hardware](http://www.varesano.net/projects/hardware/FreeIMU)
 [jrowberg's I2CDevLib](https://github.com/jrowberg/i2cdevlib)
-{Papers will be added soon}
+[Related Literature, *that we collected*](https://drive.google.com/open?id=0By0rvNg9_qznd2NORDUyVGNTVWM)

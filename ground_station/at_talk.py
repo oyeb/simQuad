@@ -11,7 +11,7 @@ import serial, random
 class radio:
 
   def __init__(self, port, baudrate):
-    assert(baudrate == 57600)
+    assert(baudrate == 115200)
     self.interface = serial.Serial(port, baudrate, timeout=None)
     print('Connected')
     self.interface.flushInput()

@@ -228,11 +228,26 @@ const unsigned char dmpUpdates[MPU6050_DMP_UPDATES_SIZE] PROGMEM = {
 const uint8_t dmpPacketSize = 42;
 
 void mpu_init(uint8_t);
+/*
+ * Clock Source:      X-GYRO
+ * DLPF bandwidth:    42Hz
+ * Sample rate:       200Hz
+ * gyro sensitivity:  500 dps
+ * accel sensitivity: 2g
+*/
 uint8_t dmpInitialize();
+/*
+ * Accel and gyro offsets are trash values
+ * Clock Source:             Z-GYRO
+ * Sample rate:              200Hz
+ * external fifo_frame sync: TEMP_OUT_L[0] {by default (26/12/15)}
+ * DLPF bandwidth:           42Hz
+ * gyro sensitivity:         2000 dps
+*/
+
 uint8_t dmpGetQuaternion(Quaternion*, const uint8_t*);
-void cal_mpu_off(uint8_t);
+void cal_mpu_off(uint8_t); // not tested! (26/12/15)
 void cfgr_mpu_off();
-//void mpu_getReadings(int16_t *);
 void mpu_get_int_status(uint8_t *);
 void mpu_send_quat_packet(uint8_t *);
 

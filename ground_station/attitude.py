@@ -1,48 +1,21 @@
 import numpy as np
+from vispy.util.quaternion import Quaternion
 
-def variance(readings):
-  sum1 = np.zeros(3)
-  sum2 = np.zeros(3)
-  i=0
-  while i<10:
-    sum1 += readings[i]
-    sum2 += readings[i]*readings[i]
-    i+=1
-  num = (sum1*sum1)/10
-  sd  = (sum2-num)/9
-  var = np.sqrt(sd)
-  return var
+data = [0]*4
 
-class state_estimator:
-
-  def __init__(self, ns_state, ns_vis, ns_cfg, queue_attest):
-    self.QuadState = ns_state
-    self.config = ns_cfg
-    self.mpl_vis = ns_vis
-    self.data = [0]*6
-    self.q_attest = queue_attest
-
-  def kalman_loop(self):
-    """
-    packet: list of 12 raw bytes {convert to signed ints, grouped into (gyro3, accel3)}
-    """
-    #fout = open('flog.log', 'w')
-    while self.config.comms_active:
-      try:
-        packet = self.q_attest.get(True, .008)
-      except:
-        continue
-      _ind=0
-      for i in range(0,12, 2):
-        self.data[_ind] = (packet[i]<<8)|packet[i+1]
-        if self.data[_ind] & 0x8000:
-          self.data[_ind] = self.data[_ind] - 0x10000
-        _ind += 1
-      accel3 = np.array([float(self.data[0])/self.config.a_scale, float(self.data[1])/self.config.a_scale, float(self.data[2])/self.config.a_scale])
-      gyro3  = np.array([float(self.data[3])/self.config.g_scale, float(self.data[4])/self.config.g_scale, float(self.data[5])/self.config.g_scale])
-      # converted packet -> data -> gyro3, accel3
-      #fout.write("%s %s\n"%(accel3, gyro3))
-      print (accel3, gyro3)
-    
-    #fout.close()
-    print('Estimation has paused')
+def estimate(quat_packet, ns_qstate):
+  """
+  quat_packet: list of 8 raw bytes 
+  convert to signed int16; converted to float32; update ns_qstate.heading;
+  """
+  for i in range(0,8,2):
+    data[i//2] = (quat_packet[i]<<8)|quat_packet[i+1]
+    if data[i//2] & 0x8000:
+      data[i//2] = data[i//2] - 0x10000
+  qq = np.array([float(data[0])/16384.0, float(data[1])/16384.0, float(data[2])/16384.0, float(data[3])/16384.0], dtype=np.float32)
+  # quat_packet -> data -> quaternion
+  # The order is weird, right?
+  # That's because of the way GroundStation and Quadcopter Coordinate Systems are aligned
+  # This weird order just converts rotation in Quad-system to GS-system
+  ns_qstate.heading = Quaternion(qq[0], -qq[1], -qq[3], qq[2])
+  print("wxyz", qq)

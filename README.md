@@ -14,6 +14,9 @@ Usage
 You need an Arduino Board and an MPU6050. See the wiki on [how to hook up an MPU6050 to an arduino](http://playground.arduino.cc/Main/MPU-6050).
 If you need wireless communications, hook the `RX` and `TX` of the XBee radio into the Arduino's Serial `TX` `Rx` pins. Make sure the XBees are in `AT-transparent` (not in `ZB`) mode *(Just flash or make sure the firmware on both radios is 802.15.4)*.
 Find out the serial `portID` of the Arduino or XBee.
+> Default **portID is `/dev/ttyACM0` in WIRED-MODE (USB cable)**
+
+> Default **portID is `/dev/ttyUSB0` in WIRELESS-MODE (XBee radio)**
 
 Latest
 ------
@@ -21,22 +24,25 @@ Latest
 + Flash `arduino/saber2.cpp` onto Arduino Uno or Mega2560 using the Arduino IDE.
 + Launch `ground_station/gs-control.py` as shown, on the PC. You should see an animated real-time GUI visualising the attitude of quadcopter. The darker colored ends were "initially closer to you".
 ```bash
-python gs-control.py <portID>
+python gs-control.py [--port /dev/ttyACM0]
 ```
 + Kill the process by typing `quit` *(on the terminal)*. You may not be able to see what you type, that's OK.
 	- You can kill the visualisation by closing window or clicking on it.
 
-![Snapshot of gs-control.py in action](https://cloud.githubusercontent.com/assets/ "Snapshot of gs-control.py in action")
+![Snapshot of gs-control.py in action](https://cloud.githubusercontent.com/assets/9897445/12040787/dae8c3ce-ae91-11e5-995a-1946d88bf482.png "Snapshot of gs-control.py in action, the values on the terminal are the Tait-Bryan Angles")
 
 For wireless communications, invoke `gs-control.py` like this:
 ```bash
-python gs-control.py --wl <portID>
+python gs-control.py -wl [--port /dev/ttyUSB0]
 ```
 
 Older Modules
 -------------
 + Flash `arduino/saber.cpp` onto Arduino Uno or Mega2560 using the Arduino IDE.
 + Launch `ground_station/kalman_binary.py` as shown, on the PC. You should see an animated real-time GUI visualising the attitude of MPU6050.
+```bash
+python kalman_binary.py
+```
 + Kill the process by hitting `Ctrl` `C` *(on the terminal)*.
 
 ![Snapshot of kalman_binary.py in action](https://cloud.githubusercontent.com/assets/9897445/11621002/d0c21f32-9cdd-11e5-911d-e7066bb343ef.png "Snapshot of kalman_binary.py in action")

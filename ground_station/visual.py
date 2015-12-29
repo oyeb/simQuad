@@ -45,7 +45,7 @@ class Canvas(app.Canvas):
 
     def __init__(self, width=800, height=600, ns_qstate=None):
         app.Canvas.__init__(self, keys='interactive', size=(width, height))
-        self.title = "D'oh! A big mess"
+        self.title = "Heading Visual"
         self.QuadState = ns_qstate
 
         # make the quadcopter mesh

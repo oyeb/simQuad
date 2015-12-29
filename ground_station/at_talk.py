@@ -9,12 +9,12 @@ xbee pinouts:
 import serial, random
 
 class radio:
-"""
+  """
   Provides interface to the serial port or XBee
   Usage in both cases is almost the same.
   On manjaro(Arch linux) I just have to change the `portID`
   See the arg-parser in gs-control.py to get a hint on usage.
-"""
+  """
   def __init__(self, port, baudrate):
     assert(baudrate == 115200)
     self.interface = serial.Serial(port, baudrate, timeout=None)
@@ -23,7 +23,7 @@ class radio:
 
   def diagnose(self):
     """
-      Checks if XBee is working
+    Checks if XBee is working
     """
     self.interface.flushInput()
     self.interface.write("+++")
@@ -35,8 +35,8 @@ class radio:
   
   def notify(self):
     """
-      Initiates a handshake. Can be used to send a command,
-      since urrently just a random byte is sent.
+    Initiates a handshake. Can be used to send a command,
+    since urrently just a random byte is sent.
     """
     code = random.randint(0, 255)
     self.write(chr(code).encode('latin1'))

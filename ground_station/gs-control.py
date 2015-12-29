@@ -26,13 +26,26 @@ Uses VisPy and quadcopter state (computed by `attitude`) to visualise the quadco
 + Updation of namespace list or dict members is tricky.
 	* You must make a local copy (in the function), change it, then reassign it to the <namespace>.<list-var>.
 """
+import argparse
+parser = argparse.ArgumentParser(description="GroundStation Control Launch Script", add_help=True)
+parser.add_argument("--port", help="Serial PORT_ID of the device connected to PC", default=None, action="store")
+parser.add_argument("-wl", help="Wireless communications switch", default=False, action="store_true")
+args = parser.parse_args()
+if args.wl:
+  if args.port == None:
+    args.port = "/dev/ttyUSB0"
+else:
+  if args.port == None:
+    args.port = "/dev/ttyACM0"
+#print(args)
+
 import multiprocessing
 import rxControl, at_talk, time, visual
 import sys, numpy as np
 from vispy.util.quaternion import Quaternion
 
 # Serial objects are not pickle-able, hence they cannot be a part of a Manager.Namespace and thus serial port is a global.
-arduino = at_talk.radio('/dev/ttyACM0', 115200)
+arduino = at_talk.radio(args.port, 115200)
 
 # There are multiple namespaces for flexibility
 # {ns_comms, ns_qstate, ns_vis, ns_cfg}
@@ -81,4 +94,3 @@ sorter.end() #cascades to the estimator
 arduino.notify()
 p_sorter.join()
 print('sort:%d'%(p_sorter.pid))
-

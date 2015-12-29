@@ -20,12 +20,13 @@ def estimate(quat_packet, ns_qstate):
   ns_qstate.heading = Quaternion(qq[0], -qq[1], -qq[3], qq[2])
   ns_qstate.rpy = getRPY(ns_qstate.heading)
   #print(ns_qstate.heading)
+  print(ns_qstate.rpy*180.0/np.pi)
 
 def getRPY(q):
   """
   Converts quaternoin into { Roll : Pitch : Yaw }
   """
-  r = np.atan2(2*(q.w*q.x + q.y*q.z), 1-2*(q.x**2 + q.y**2))
+  r = np.arctan2(2*(q.w*q.x + q.y*q.z), 1-2*(q.x**2 + q.y**2))
   p = np.arcsin(2*(q.w*q.y - q.x*q.z))
-  y = np.atan2(2*(q.w*q.z + q.x*q.y), 1-2*(q.y**2 + q.z**2))
-  return (r, p, y)
+  y = np.arctan2(2*(q.w*q.z + q.x*q.y), 1-2*(q.y**2 + q.z**2))
+  return np.array([r, p, y], dtype=np.float64)

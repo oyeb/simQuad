@@ -1,30 +1,60 @@
-#include <mytimer.h>
+#include "mytimer.h"
 
-volatile uint8_t *flag;
-uint8_t set_value;
+uint8_t isActive = 0;
+void (* _flag_operation)(void);
 
-void timer_init(int tp, volatile uint8_t *flag_var, uint8_t set_value_var)
-{
-    flag = flag_var;
-    set_value = set_value_var;
-    // initialize Timer1
-    cli();          // disable global interrupts
-    TCCR1A = 0;     // set entire TCCR1A register to 0
-    TCCR1B = 0;     // same for TCCR1B
-    // enable timer compare interrupt:
-    TIMSK1 |= (1 << OCIE1A);
-    // set compare match register to desired timer count:
-    OCR1A = OCR_VALUE(tp);
-    // Set CS10 and CS12 bits for 64 prescaler:
-    TCCR1B |= (1 << CS10) | (1 << CS11);
-    // turn on CTC mode:
-    TCCR1B |= (1 << WGM12);
+uint8_t timer_init(uint16_t tp, void (*flag_op)(void)){   
+    if (!isActive){
+        isActive = 1;
+        _flag_operation = flag_op;
+        uint8_t oldSREG = SREG;
+        // initialize Timer1
+        cli();          // disable global interrupts
+        MY_TCCRA = 0;     // set entire TCCR1A register to 0
+        MY_TCCRB = 0;     // same for TCCR1B
+        // enable timer compare interrupt:
+        MY_TIMSK |= (1 << OCIE1A);
+        // set compare match register to desired timer count:
+        MY_OCRA = OCR_VALUE(tp);
+        // Set CS10 and CS12 bits for 64 prescaler:
+        MY_TCCRB |= (1 << CS10) | (1 << CS11);
+        // turn on CTC mode:
+        MY_TCCRB |= (1 << WGM12);
 
-    // enable global interrupts:
-    sei();
+        // enable global interrupts:
+        sei();
+        SREG = oldSREG;
+        return 0;
+    }
+    return 1;
 }
 
-ISR(TIMER1_COMPA_vect)
+uint8_t timer_update(uint16_t tp){
+    // the first interrupt after the change might be missed or inaccurate
+    // don't use for critical application
+    // minimum tp for interrupt to be caught ~1 ms (this figure is wrong)
+    if (isActive){
+        uint8_t oldSREG = SREG;
+        cli();
+        MY_OCRA = OCR_VALUE(tp);
+        sei();
+        SREG = oldSREG;
+        return 0;
+    }
+    return 1;
+}
+
+uint8_t timer_detach(void){
+    if (isActive){
+        MY_TIMSK = 0;
+        MY_TCCRB = 0;
+        isActive = 0;
+        return 0;
+    }
+    return 1;
+}
+
+ISR(MY_TIMER_COMPA_vect)
 {
-    *flag |= set_value;
+    _flag_operation();
 }

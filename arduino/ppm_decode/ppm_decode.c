@@ -5,6 +5,7 @@ FOR 6 CHANNELS ONLY:
 anything more than 2000us should be dead zone.
 deadzone can occur during channel data!
 ~5000us dead zone
+This script handles dead-zones.
 
 FOR OTHER CHANNELS:
 <no data>

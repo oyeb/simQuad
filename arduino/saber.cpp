@@ -1,6 +1,7 @@
 /*
   27 Sep Tested with all kalman_binary.py, works like a charm
   25 Dec rectified timer_init()
+  29 Dec rectified timer_init()
 -------------------------------------------------------------------------------------------------------------------
 MPU_CONFIGURATION
     * No fifo, raw accel and gyro
@@ -19,6 +20,8 @@ MPU_CONFIGURATION
 #define CAL_DEBUG
 
 volatile uint8_t mint=0;
+void mpu_interrupt_fn(void);
+
 uint8_t script_ready=0;
 char cmd_in;
 int16_t acc_gyro[6];
@@ -26,7 +29,7 @@ uint16_t count=0; //intended global variable <---> MPU
 
 void setup() {
   Serial.begin(57600);
-  timer_init(5, &mint, 1);
+  timer_init(5, &mpu_interrupt_fn);
   mpu_init(0); //No interrupts from MPU reqd.
   cfgr_mpu_off();  //Read offsets from OFFSETS_EEPROM
   //cal_mpu_off(1); //If need to reconfig eeprom consts.
@@ -62,7 +65,7 @@ void loop(){
         }
       }
     #endif
-    mint = false;
+    mint = 0;
   }
   else{
     //other non-motion work!
@@ -75,6 +78,9 @@ void loop(){
   }
 }
 
+void mpu_interrupt_fn(void){
+  mint = 1;
+}
 /*
 STATS
 ms      count

@@ -1,6 +1,6 @@
 import numpy as np
 from vispy import gloo, app, visuals
-import testing 
+import vis_util 
 from vispy.util.transforms import perspective, translate, rotate
 from vispy.util.quaternion import Quaternion
 
@@ -68,8 +68,8 @@ class Canvas(app.Canvas):
         self.ui_beta = self.ui_height = 0
 
     def Quadcopter(self, nr, nc, r, l):
-        quad_frame, colors = testing.create_quad_frame(rows=nr, cols=nc, radius=r, length=l, offset=True)
-        quad_mesh = testing.MyMeshData()
+        quad_frame, colors = vis_util.create_quad_frame(rows=nr, cols=nc, radius=r, length=l, offset=True)
+        quad_mesh = vis_util.MyMeshData()
         quad_mesh.set_vertices(quad_frame.get_vertices())
         quad_mesh.set_faces(quad_frame.get_faces())
         quad_mesh.set_vertex_colors(colors)
@@ -136,7 +136,8 @@ class Canvas(app.Canvas):
 
     def getOrientation(self):
         if self.QuadState == None:
-            self.orientation_quat = testing.sample_quat(0, 0.5, 0, degrees=True) * self.orientation_quat
+            # if not connected to gs-control.py, being run as stand alone script
+            self.orientation_quat = (vis_util.sample_quat(0, 0.5, 0, degrees=True) * self.orientation_quat).normalize()
             return self.orientation_quat
         else:
             return (self.QuadState.heading).normalize()

@@ -5,13 +5,13 @@ Utilises:
 
 * `at_talk`
 Handles communications, supports wired/wireless as well as all commands and communication modes.
-* `ser_sorter`
-Has complete control over the receiving end of the Serial Communications. Decides where a "packet" deserves to go (via Queues or Namspaces). `at_talk` and `ser_sorter` complement each other.
+* `rxControl`
+Has complete control over the receiving end of the Serial Communications. Decides where a "packet" deserves to go (via Queues or Namspaces).
 	+ `attitude`
 	Performs (if any) computation to maintain a copy os the quadcopter state in the GroundStation.
 * `visual`
 Uses VisPy and quadcopter state (computed by `attitude`) to visualise the quadcopter and displays other metrics.
-	+ `testing`
+	+ `vis_util`
 	Utility finctions and classes for mesh generation etc.
 
 `multiprocessing.Manager.Namespace`s are used to share global information with sub-modules. All synch-ing is done internally!
@@ -27,7 +27,7 @@ Uses VisPy and quadcopter state (computed by `attitude`) to visualise the quadco
 	* You must make a local copy (in the function), change it, then reassign it to the <namespace>.<list-var>.
 """
 import multiprocessing
-import ser_sorter, at_talk, time, visual
+import rxControl, at_talk, time, visual
 import sys, numpy as np
 from vispy.util.quaternion import Quaternion
 
@@ -38,14 +38,15 @@ arduino = at_talk.radio('/dev/ttyACM0', 115200)
 # {ns_comms, ns_qstate, ns_vis, ns_cfg}
 mgr = multiprocessing.Manager()
 ns_comms = mgr.Namespace()
-ns_comms.name = "Communications:\n\tMode that ser_sorter operates in(comms_mode)\n\tRecieved packet from mpu(quat_packet)\n\tRecieved packet for GS(gs_packet)"
+ns_comms.name = "Communications:\n\tMode that rxControl operates in(comms_mode)\n\tRecieved packet from mpu(quat_packet)\n\tRecieved packet for GS(gs_packet)"
 ns_comms.quat_packet = None
 ns_comms.gs_packet = None
 ns_comms.mode = 'att_est'
 
 ns_qstate = mgr.Namespace()
-ns_qstate.name = "QuadState:\n\tAttitude Quaternion(heading)"
+ns_qstate.name = "QuadState:\n\tAttitude Quaternion(heading)\n\tRPY calc. from the heading(rpy)"
 ns_qstate.heading = Quaternion()
+ns_qstate.rpy = (0.0, 0.0, 0.0)
 
 ns_cfg = mgr.Namespace()
 ns_cfg.a_scale = 16384.0     # Accel 2g
@@ -57,7 +58,7 @@ ns_cfg.this_is_v2 = sys.version_info[0] == 2
 # Queues
 
 vis_canvas = visual.Canvas(800, 600, ns_qstate)
-sorter = ser_sorter.Sorter(ns_comms, ns_cfg, ns_qstate, arduino)
+sorter = rxControl.Sorter(ns_comms, ns_cfg, ns_qstate, arduino)
 
 ns_cfg.comms_active = True
 p_sorter = multiprocessing.Process(target=sorter.start)

@@ -134,7 +134,7 @@ ktheta = np.array([1.5707963267948966,1.5707963267948966,0])
 P = np.array([np.zeros(3),np.zeros(3),np.zeros(3),np.zeros(3)])
 K = np.array([np.zeros(3),np.zeros(3)])
 
-print 'Me Ready'
+print('Me Ready')
 time.sleep(2.5)
 #Handshake MAY BE REDUNDANT
 arduino.notify()
@@ -144,7 +144,7 @@ while True:
 		num = arduino.readn(12)
 		num = [ord(x) for x in num]
 	except:
-		print 'Serial error!'
+		print('Serial error!')
 		raise RuntimeError
 	_ind=0 #this var is connected to for loop below!!
 	for i in range(0,12, 2):

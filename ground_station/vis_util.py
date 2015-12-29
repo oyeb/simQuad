@@ -16,7 +16,11 @@ def sample_quat(rx, ry, rz, degrees=False):
 
 
 class MyMeshData(MeshData):
-    """ Add to Meshdata class the capability to export good data for gloo """
+    """
+    Add to Meshdata class the capability to export good data for gloo
+    Copied from 
+        vispy/examples/demo/gloo/primitive_mesh_viewer_qt.py
+    """
     def __init__(self, vertices=None, faces=None, edges=None,
                  vertex_colors=None, face_colors=None):
         MeshData.__init__(self, vertices=None, faces=None, edges=None,

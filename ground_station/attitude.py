@@ -18,4 +18,14 @@ def estimate(quat_packet, ns_qstate):
   # That's because of the way GroundStation and Quadcopter Coordinate Systems are aligned
   # This weird order just converts rotation in Quad-system to GS-system
   ns_qstate.heading = Quaternion(qq[0], -qq[1], -qq[3], qq[2])
-  print("wxyz", qq)
+  ns_qstate.rpy = getRPY(ns_qstate.heading)
+  #print(ns_qstate.heading)
+
+def getRPY(q):
+  """
+  Converts quaternoin into { Roll : Pitch : Yaw }
+  """
+  r = np.atan2(2*(q.w*q.x + q.y*q.z), 1-2*(q.x**2 + q.y**2))
+  p = np.arcsin(2*(q.w*q.y - q.x*q.z))
+  y = np.atan2(2*(q.w*q.z + q.x*q.y), 1-2*(q.y**2 + q.z**2))
+  return (r, p, y)

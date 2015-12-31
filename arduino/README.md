@@ -51,4 +51,13 @@ See @arrow- 's [post](http://www.rcgroups.com/forums/showpost.php?p=33579712&pos
 | Timing             | Low           | Don't change this.                                               |
 | Range              | 1050 - >1950? | motor stops at 1040, spins from 1050 onwards                     |
 
-See the [`ESC_Manual.pdf`](docs/ESC_Manual.pdf) to find out how ESC programming is done for our **FlyFun 30A** ESCs.
+See the [`ESC_Manual.pdf`](http://www.hobbywing.com/uploadfiles/sx/file/Manual/HW-01-V4.pdf) to find out how ESC programming is done for our **FlyFun 30A** ESCs.
+
+Servo.h utilises timers {5, 1, 3, 4} (in that order of necessity) on an Arduino Mega2560
+In this project we will never require 12 servo objects and hence **only timer5 will be used**.
+
+Manual Control
+--------------
+
+Use `low_motor.py` with `esc_control/manual_motors.ino`. Very rudimentary setup that should be enough for the maiden flight and lift-off.
+Tested with XBee in Wireless mode successfully.

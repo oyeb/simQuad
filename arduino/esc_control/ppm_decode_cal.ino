@@ -5,6 +5,7 @@ FOR 6 CHANNELS ONLY:
 anything more than 2000us should be dead zone.
 deadzone can occur during channel data!
 ~5000us dead zone
+This script handles dead-zones.
 
 FOR OTHER CHANNELS:
 <no data>
@@ -130,3 +131,14 @@ void calibrate(){
   Serial.print(command_limits[7]);
   Serial.print('\n\n');
 }
+
+/*
+1196  1208  1004  1196
+1776  1808  2004  1796
+
+1192  1212  1004  1196
+1776  1808  2004  1792
+
+1196  1212  1008  1196
+1772  1812  2004  1792
+*/

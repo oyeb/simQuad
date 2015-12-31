@@ -1,5 +1,6 @@
 /*
     25/12/15 CHRISTMAS! Initial commit.
+    29 Dec rectified timer_init()
 ------------------------------------------------------------------------------------------------
     Tested with gs-control.py, incompatible with kalman*.py as they don't expect quaternions
         Build and flash (via IDE).
@@ -36,6 +37,7 @@ uint8_t fifoBuffer[64]; // FIFO storage buffer
     volatile uint8_t IntVector = 0;     // Interrupt Vector and also shows if any interrupt is outstanding.
     enum _interrupts {TIMER_INT=1};     // Types of interrupts
 // function decl
+     void timer_int_fn(void);
 
 
 void setup(){
@@ -51,7 +53,7 @@ void setup(){
         //Serial.println("SETUP");
     }
     pinMode(13, OUTPUT);
-    timer_init(_TIMER_PERIOD, &IntVector, TIMER_INT);
+    timer_init(_TIMER_PERIOD, &timer_int_fn);
 
 }
 
@@ -101,4 +103,8 @@ void loop(){
 
         IntVector &= ~TIMER_INT;
     } // other interrupts
+}
+
+void timer_int_fn(void){
+    IntVector |= TIMER_INT;
 }

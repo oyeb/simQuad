@@ -5,6 +5,8 @@ xbee pinouts:
 2.DOUT (Tx of XBee) connect to RX of arduino
 3.DIN (Rx of Xbee) connect to TX of...
 10.GND
+
+l to r vcc gnd scl sda dash dash ad0 int
 '''
 import serial, random
 
@@ -35,17 +37,17 @@ def bytesToLong(byte_list):
 class radio:
 
   def __init__(self, port, baudrate):
-    assert(baudrate == 115200)
+    assert(baudrate == 19200)
     self.interface = serial.Serial(port, baudrate, timeout=None)
     print('Connected')
     self.interface.flushInput()
 
   def diagnose(self):
     self.interface.flushInput()
-    self.interface.write("+++")
+    self.interface.write(b"+++")
     print(self.interface.read(2))
-    self.interface.write("atmy\r")
-    myid = int(self.interface.read(5))
+    self.interface.write(b"atmy\r")
+    myid = int(self.interface.read(5).decode('utf8'))
     print("myid : %d"%myid)
   
   def notify(self):
@@ -93,7 +95,7 @@ if __name__ == '__main__':
   print(x, "==", longToBytes(x))
 
   print('XBee demo')
-  xbee = radio('/dev/ttyUSB0', 57600)
+  xbee = radio('/dev/ttyUSB0', 19200)
   xbee.diagnose()
   xbee.notify()
   while True:

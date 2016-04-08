@@ -1,4 +1,4 @@
-import attitude
+import attitude, time
 
 class Sorter:
   """
@@ -17,6 +17,8 @@ class Sorter:
     ns_cfg.comms_active is True only when gs-control wants sorter to work!
     puts most recent packet into the correct namespace member
     """
+    up = time.time()
+    seq = 0
     while self.config.comms_active:
       if self.comms.mode == 'att_est':
         try:
@@ -28,6 +30,20 @@ class Sorter:
           raise RuntimeError
         self.comms.quat_packet = num
         attitude.estimate(num, self.QuadState)
+      
+      # Another experimental mode of communication
+      elif self.comms.mode == 'pings':
+        try:
+          msg = self.arduino.readn(8)
+          print(time.time() - up, msg.decode('utf8'))
+          seq += 1
+        except:
+          print('Serial error!')
+          raise RuntimeError
+        if (time.time() - up > 1000 * 20):
+          print("probably lost %d, re-sending..." % seq)
+          self.arduino.write(seq)
+
       #else: # other modes of comms.
 
 

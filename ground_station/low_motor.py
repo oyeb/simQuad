@@ -12,14 +12,16 @@ pw = 620
 while True:
 	ch = input("> ")
 	if ch.isalpha():
-		if ch == 'u':
-			pw += 100
+		if ch == 'a':
+			pw += 20
 		if ch == 'd':
-			pw -= 100
+			pw -= 20
 		if ch == 's':
 			pw = 1040
 		if ch == 'm':
 			pw = 1950
+		#if ch == 'x':
+	#		pw = 1350
 		if ch == 'q':
 			arduino.write( 1040 )
 			print("Bye!")

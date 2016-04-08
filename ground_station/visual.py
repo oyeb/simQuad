@@ -1,3 +1,11 @@
+"""
+VISPY Coordinate system is:
+
+vispy_x horizontal (along screen), points to right on screen
+vispy_y into screen (from eyes to screen)
+vispy_z vertical (along screen), points to top on screen
+"""
+
 import numpy as np
 from vispy import gloo, app, visuals
 import testing 
@@ -136,10 +144,17 @@ class Canvas(app.Canvas):
 
     def getOrientation(self):
         if self.QuadState == None:
-            self.orientation_quat = testing.sample_quat(0, 0.5, 0, degrees=True) * self.orientation_quat
+            self.orientation_quat = testing.sample_quat(0, 0, 0, degrees=True) * self.orientation_quat
+            #self.orientation_quat = Quaternion(0.9659258262890683, -0.25881904510252074, 0, 0) * self.orientation_quat
             return self.orientation_quat
         else:
-            return (self.QuadState.heading).normalize()
+            hh = self.QuadState.heading
+            gg = Quaternion()
+            gg.w = hh.w
+            gg.x = hh.z
+            gg.y = hh.y
+            gg.z = -hh.x
+            return gg.normalize()
 
 if __name__ == '__main__':
     c = Canvas(800, 600)

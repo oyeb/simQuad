@@ -45,7 +45,7 @@ import sys, numpy as np
 from vispy.util.quaternion import Quaternion
 
 # Serial objects are not pickle-able, hence they cannot be a part of a Manager.Namespace and thus serial port is a global.
-arduino = at_talk.radio(args.port, 115200)
+arduino = at_talk.radio(args.port, 19200)
 
 # There are multiple namespaces for flexibility
 # {ns_comms, ns_qstate, ns_vis, ns_cfg}
@@ -64,7 +64,7 @@ ns_qstate.rpy = (0.0, 0.0, 0.0)
 ns_cfg = mgr.Namespace()
 ns_cfg.a_scale = 16384.0     # Accel 2g
 ns_cfg.g_scale = 16.384      # Gyro  2000 dps
-ns_cfg.TIME_INTERVAL = 0.005 # ms
+ns_cfg.TIME_INTERVAL = 0.02 # ms
 ns_cfg.comms_active = False
 ns_cfg.this_is_v2 = sys.version_info[0] == 2
 

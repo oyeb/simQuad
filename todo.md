@@ -18,9 +18,12 @@
 * ✔ Use [XbeeS1](http://www.digi.com/support/productdetail?pid=3430&osvid=0&type=documentation) to make communication with the board, wireless.
   + This is Master(`groud_station`) - Slave(`quadcopter`) only. Slave cannot initiate. *Hopefully, there won't be any need of Asynchronous Peer Protocol*:grin:
 * Use `VisPy` for visualisations in `ground_station`.
+    + Figure out the axes *(for RPY)* and solve *the `home` position problem*.
 * ✔ Use Quaternions for attitude representation.
-* ✔ Realised that Kalman filter cannot fuse gyro and accel estimates of attitude as the signal-noise is not *"white" (ie, NOT normally distributed)*
+* ✔ Realised that Kalman filter cannot fuse gyro and accel estimates of attitude as the signal-noise is not *"white" (ie, normally distributed)
     + Instead make EKF that takes the control input into consideration.
+* Use [Servo](https://www.arduino.cc/en/Reference/Servo) library for controlling the ESCs.
+* Implement a PID controller that controls attitude and linear velocity of the quadcopter.
 
 ##Code Restructuring
 
@@ -40,6 +43,7 @@
 I have decided to utilise [VisPy](http://vispy.org/) for all plotting work. The 3D plotting is ready but not the `mpl-plots`. I did see a way to subclass `scenegraph` [here](https://github.com/vispy/vispy/issues/1140). If this works, I'll have to decide what to do with the current 3D plotting which is primitive, though extremely robust (because I understand the transforms).
 
 ##Other Resources
-[Varesano's Blog: FreeIMU lib+hardware](http://www.varesano.net/projects/hardware/FreeIMU)
-[jrowberg's I2CDevLib](https://github.com/jrowberg/i2cdevlib)
-[Related Literature, *that we collected*](https://drive.google.com/open?id=0By0rvNg9_qznd2NORDUyVGNTVWM)
+
++ [Varesano's Blog: FreeIMU lib+hardware](http://www.varesano.net/projects/hardware/FreeIMU)
++ [jrowberg's I2CDevLib](https://github.com/jrowberg/i2cdevlib)
++ [Related Literature, *that we collected*](https://drive.google.com/open?id=0By0rvNg9_qznd2NORDUyVGNTVWM)

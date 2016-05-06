@@ -144,13 +144,9 @@ class Canvas(app.Canvas):
 
     def getOrientation(self):
         if self.QuadState == None:
-<<<<<<< HEAD
             # if not connected to gs-control.py, being run as stand alone script
             self.orientation_quat = (vis_util.sample_quat(0, 0.5, 0, degrees=True) * self.orientation_quat).normalize()
-=======
-            self.orientation_quat = testing.sample_quat(0, 0, 0, degrees=True) * self.orientation_quat
             #self.orientation_quat = Quaternion(0.9659258262890683, -0.25881904510252074, 0, 0) * self.orientation_quat
->>>>>>> pwm-works
             return self.orientation_quat
         else:
             hh = self.QuadState.heading
